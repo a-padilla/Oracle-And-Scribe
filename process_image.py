@@ -5,7 +5,6 @@ except ImportError:
     import Image
 import pytesseract
 import numpy as np
-import os
 
 # get text from an image as a string
 text_from_image = pytesseract.image_to_string(Image.open('images/test1.jpg'))
