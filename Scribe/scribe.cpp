@@ -1,5 +1,55 @@
 #include "scribe.h"
 
+/* ---------- BLUETOOTH ---------- */
+void bt_setup(BluetoothSerial& SerialBT){
+    Serial.begin(115200);
+    SerialBT.begin("Scribe"); //Bluetooth device name
+    Serial.println("The device started, now you can pair it with bluetooth!");
+}
+
+bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
+    // if (Serial.available()) {
+    //     SerialBT.write(Serial.read());
+    // }
+    bool is_digit=false;
+    string num_lines="",holder="";
+    if (SerialBT.available()) {
+      while(SerialBT.available()){
+        num_lines+=(char)SerialBT.read();
+      }
+      num_lines=trim(num_lines);
+      is_digit=true;
+      for(char c: num_lines){
+        if(!isdigit(c)){
+          is_digit=false;
+          break;
+        }
+      }
+      if(is_digit && stoi(num_lines)!=0){
+        Serial.write('1');
+        page.clear();
+        int t=stoi(num_lines);
+        while(t){
+          delay(50);
+          if(SerialBT.available()){
+            holder="";
+            while(SerialBT.available()){
+              holder+=(char)SerialBT.read();
+            }
+            page.push_back(trim(holder));
+            Serial.write('2');
+            t--;
+          }
+        }
+        for(char c: num_lines){
+          Serial.write(c);
+        }
+        return true;
+      }
+    }
+    delay(50);
+    return false;
+}
 
 /* ---------- MISC FUNCTION ---------- */
 bool is_lower(char c){
@@ -9,6 +59,16 @@ bool is_lower(char c){
 
 char to_upper(char c){
   return (char)(c-32);
+}
+
+string trim(string s){
+  string holder="";
+  for(char c: s){
+    if(c != '\n' && c != '\r'){
+      holder+= c;
+    }
+  }
+  return holder;
 }
 
 uint8_t decode(char c){
