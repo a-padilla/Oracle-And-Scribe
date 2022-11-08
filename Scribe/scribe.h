@@ -1,7 +1,20 @@
+#pragma once
 #include <Arduino.h>
+#include "BluetoothSerial.h"
+#include <string>
+#include <vector>
+using namespace std;
 
 #define MAX_CHAR 100
 #define MAX_LINES 5
+
+// BLUETOOTH
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+void bt_setup(BluetoothSerial& SerialBT);
+bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
 
 // button pins for chars
 const int prev_button_pin = 2;
@@ -31,6 +44,7 @@ const int led5 = 32;
 char to_upper(char c);
 bool is_lower(char c);
 uint8_t decode(char c);
+string trim(string s);
 
 // bluetooth functions
 // void bt_setup(SoftwareSerial& obj);

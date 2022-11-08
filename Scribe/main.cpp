@@ -16,14 +16,13 @@ long prev_line_last_debounce_time=0;
 long next_line_last_debounce_time=0;
 long debounce_delay=250;
 
-vector<string> lines;
-// char** lines = (char**)malloc(MAX_LINES*sizeof(char*));
-
+vector<string> page;
 uint8_t str_ind=0, line_ind=0, setter;
-
 char curr_char;
 string curr_line;
-// char* curr_line = (char*)malloc(MAX_CHAR*sizeof(char));
+bool new_page=false;
+
+BluetoothSerial SerialBT;
 
 // functions
 void poll(const int button_pin, long &lbt, int &button, char cl, char np);
@@ -31,38 +30,31 @@ char next_char();
 char prev_char();
 string next_line();
 string prev_line();
-// char* next_line();
-// char* prev_line();
 void set_led(uint8_t c);
-int num_lines();
 
 void setup() {
-  // memset(lines, 0, MAX_LINES*sizeof(char*));
+  bt_setup(SerialBT);
+  page.push_back("Bradley");
+  page.push_back("Torie");
+  page.push_back("Austin");
 
-  lines.push_back("Bradley");
-  lines.push_back("Torie");
-  lines.push_back("Austin");
-  // lines[0] = (char*)"Bradley";
-  // lines[1] = (char*)"Johnson";
-  // lines[2] = (char*)"Austin";
-
-  curr_char = lines[line_ind][str_ind];
-  curr_line = lines[line_ind];
+  curr_char = page[line_ind][str_ind];
+  curr_line = page[line_ind];
   
- //leds
- pinMode(led0, OUTPUT);
- pinMode(led1, OUTPUT);
- pinMode(led2, OUTPUT);
- pinMode(led3, OUTPUT);
- pinMode(led4, OUTPUT);
- pinMode(led5, OUTPUT);
- pinMode(last_line, OUTPUT);
- pinMode(end_line, OUTPUT);
- // buttons
- pinMode(prev_button_pin, INPUT);
- pinMode(next_button_pin, INPUT);
- pinMode(prev_line_button_pin, INPUT);
- pinMode(next_line_button_pin, INPUT);
+  //leds
+  pinMode(led0, OUTPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+  pinMode(led5, OUTPUT);
+  pinMode(last_line, OUTPUT);
+  pinMode(end_line, OUTPUT);
+  // buttons
+  pinMode(prev_button_pin, INPUT);
+  pinMode(next_button_pin, INPUT);
+  pinMode(prev_line_button_pin, INPUT);
+  pinMode(next_line_button_pin, INPUT);
 }
 
 void loop() {
@@ -82,6 +74,14 @@ void loop() {
   curr_char = curr_line[str_ind];
   setter = decode(curr_char);
   set_led(setter);
+
+  // bluetooth
+  new_page=bt_loop(SerialBT, page);
+  if(new_page){
+    str_ind=0;
+    line_ind=0;
+    curr_line=page[line_ind];
+  }
 }
 
 void poll(const int button_pin, long &lbt, int &button, char cl, char np){
@@ -108,62 +108,57 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
 }
 
 char next_char(){
-  // if(str_ind==strlen(lines[line_ind])-1){
-  if(str_ind==lines[line_ind].length()-1){
+  if(str_ind==page[line_ind].length()-1){
     str_ind=0;
-    return lines[line_ind][0];
+    return page[line_ind][0];
   }else{
     str_ind++;
-    return lines[line_ind][str_ind];
+    return page[line_ind][str_ind];
   }
 }
 
 char prev_char(){
   if(str_ind==0){
-    // str_ind=strlen(lines[line_ind])-1;
-    str_ind=lines[line_ind].length()-1;
-    return lines[line_ind][str_ind];
+    str_ind=page[line_ind].length()-1;
+    return page[line_ind][str_ind];
   }else{
     str_ind--;
-    return lines[line_ind][str_ind];
+    return page[line_ind][str_ind];
   }
 }
 
-// char* next_line(){
 string next_line(){
-  if(line_ind==num_lines()-1){
+  if(line_ind==page.size()-1){
     line_ind=0;
     str_ind=0;
-    return lines[line_ind];
+    return page[line_ind];
   }else{
     line_ind++;
     str_ind=0;
-    return lines[line_ind];
+    return page[line_ind];
   }
 }
 
-// char* prev_line(){
 string prev_line(){
   if(line_ind==0){
-    line_ind=num_lines()-1;
+    line_ind=page.size()-1;
     str_ind=0;
-    return lines[line_ind];
+    return page[line_ind];
   }else{
     line_ind--;
     str_ind=0;
-    return lines[line_ind];
+    return page[line_ind];
   }
 }
 
 void set_led(uint8_t c){
-  // conditions for beginning and end of lines
-  if(line_ind==num_lines()-1){
+  // conditions for beginning and end of page
+  if(line_ind==page.size()-1){
     digitalWrite(last_line, HIGH);
   }else{
     digitalWrite(last_line, LOW);
   }
 
-  // if(str_ind==strlen(curr_line)-1){
   if(str_ind==curr_line.length()-1){
     digitalWrite(end_line, HIGH);
   }else{
@@ -201,17 +196,4 @@ void set_led(uint8_t c){
   }else{
     digitalWrite(led0, LOW);
   }
-}
-
-int num_lines(){
-  // int count=0;
-  // for(unsigned i=0; i<MAX_LINES; i++){
-  //   if(lines[i] == 0){
-  //     break;
-  //   }else{
-  //     count++;
-  //   }
-  // }
-  // return count;
-  return lines.size();
 }
