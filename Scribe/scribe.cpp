@@ -8,7 +8,6 @@ void bt_setup(BluetoothSerial& SerialBT){
 }
 
 bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
-    
     bool is_digit=false;
     string num_lines="",holder="";
     if (SerialBT.available()) {
@@ -26,6 +25,7 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
       if(is_digit && stoi(num_lines)!=0){
         Serial.write('1');
         SerialBT.write('1');
+
         page.clear();
         int t=stoi(num_lines);
         while(t){
