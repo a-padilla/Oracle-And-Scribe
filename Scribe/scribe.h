@@ -15,14 +15,6 @@ using namespace std;
 void bt_setup(BluetoothSerial& SerialBT);
 bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
 
-// BLUETOOTH
-#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
-#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
-#endif
-
-void bt_setup(BluetoothSerial& SerialBT);
-bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
-
 // button pins for chars
 const int prev_button_pin = 2;
 const int next_button_pin = 15;
