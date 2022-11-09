@@ -26,7 +26,6 @@ uint8_t str_ind=0, line_ind=0, page_ind=0, setter;
 char curr_char;
 string curr_line;
 vector<string> curr_page;
-
 bool new_page=false;
 
 BluetoothSerial SerialBT;
@@ -95,6 +94,8 @@ void loop() {
   curr_char = curr_line[str_ind];
   setter = decode(curr_char);
   set_led(setter);
+
+  
 }
 
 void poll(const int button_pin, long &lbt, int &button, char cl, char np){
@@ -127,22 +128,22 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
 }
 
 char next_char(){
-  if(str_ind==page[line_ind].length()-1){
+  if(str_ind==curr_line.length()-1){
     str_ind=0;
-    return curr_page[line_ind][0];
+    return curr_line[0];
   }else{
     str_ind++;
-    return curr_page[line_ind][str_ind];
+    return curr_line[str_ind];
   }
 }
 
 char prev_char(){
   if(str_ind==0){
-    str_ind=curr_page[line_ind].length()-1;
-    return curr_page[line_ind][str_ind];
+    str_ind=curr_line.length()-1;
+    return curr_line[str_ind];
   }else{
     str_ind--;
-    return curr_page[line_ind][str_ind];
+    return curr_line[str_ind];
   }
 }
 
