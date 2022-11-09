@@ -5,8 +5,15 @@
 #include <vector>
 using namespace std;
 
-#define MAX_CHAR 100
-#define MAX_LINES 5
+#define MAX_PAGES 3
+
+// BLUETOOTH
+#if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
+#error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
+#endif
+
+void bt_setup(BluetoothSerial& SerialBT);
+bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
 
 // BLUETOOTH
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -25,8 +32,8 @@ const int prev_line_button_pin = 5;
 const int next_line_button_pin = 17;
 
 // button pins for pages
-// const int prev_page_button_pin = A0;
-// const int next_page_button_pin = A1;
+const int prev_page_button_pin = 19;
+const int next_page_button_pin = 18;
 
 // led pins for beginning/end of line
 const int last_line = 16;
