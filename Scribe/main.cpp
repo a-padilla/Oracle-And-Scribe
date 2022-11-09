@@ -9,21 +9,26 @@ int prev_button = LOW;
 int next_button = LOW;
 int prev_line_button = LOW;
 int next_line_button = LOW;
+int prev_page_button = LOW;
+int next_page_button = LOW;
 
 long prev_last_debounce_time=0;
 long next_last_debounce_time=0;
 long prev_line_last_debounce_time=0;
 long next_line_last_debounce_time=0;
+long prev_page_last_debounce_time=0;
+long next_page_last_debounce_time=0;
 long debounce_delay=250;
 
-vector<string> lines;
-// char** lines = (char**)malloc(MAX_LINES*sizeof(char*));
-
-uint8_t str_ind=0, line_ind=0, setter;
-
+vector<vector<string>> book;
+vector<string> page;
+uint8_t str_ind=0, line_ind=0, page_ind=0, setter;
 char curr_char;
 string curr_line;
-// char* curr_line = (char*)malloc(MAX_CHAR*sizeof(char));
+vector<string> curr_page;
+bool new_page=false;
+
+BluetoothSerial SerialBT;
 
 // functions
 void poll(const int button_pin, long &lbt, int &button, char cl, char np);
@@ -31,38 +36,38 @@ char next_char();
 char prev_char();
 string next_line();
 string prev_line();
-// char* next_line();
-// char* prev_line();
+vector<string> next_page();
+vector<string> prev_page();
 void set_led(uint8_t c);
-int num_lines();
+void get_page();
 
 void setup() {
-  // memset(lines, 0, MAX_LINES*sizeof(char*));
+  bt_setup(SerialBT);
+  page.push_back("Bradley");
+  page.push_back("Torie");
+  page.push_back("Austin");
+  book.push_back(page);
 
-  lines.push_back("Bradley");
-  lines.push_back("Torie");
-  lines.push_back("Austin");
-  // lines[0] = (char*)"Bradley";
-  // lines[1] = (char*)"Johnson";
-  // lines[2] = (char*)"Austin";
-
-  curr_char = lines[line_ind][str_ind];
-  curr_line = lines[line_ind];
+  curr_page = book[page_ind];
+  curr_line = curr_page[line_ind];
+  curr_char = curr_line[str_ind];
   
- //leds
- pinMode(led0, OUTPUT);
- pinMode(led1, OUTPUT);
- pinMode(led2, OUTPUT);
- pinMode(led3, OUTPUT);
- pinMode(led4, OUTPUT);
- pinMode(led5, OUTPUT);
- pinMode(last_line, OUTPUT);
- pinMode(end_line, OUTPUT);
- // buttons
- pinMode(prev_button_pin, INPUT);
- pinMode(next_button_pin, INPUT);
- pinMode(prev_line_button_pin, INPUT);
- pinMode(next_line_button_pin, INPUT);
+  //leds
+  pinMode(led0, OUTPUT);
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+  pinMode(led3, OUTPUT);
+  pinMode(led4, OUTPUT);
+  pinMode(led5, OUTPUT);
+  pinMode(last_line, OUTPUT);
+  pinMode(end_line, OUTPUT);
+  // buttons
+  pinMode(prev_button_pin, INPUT);
+  pinMode(next_button_pin, INPUT);
+  pinMode(prev_line_button_pin, INPUT);
+  pinMode(next_line_button_pin, INPUT);
+  pinMode(prev_page_button_pin, INPUT);
+  pinMode(next_page_button_pin, INPUT);
 }
 
 void loop() {
@@ -78,10 +83,19 @@ void loop() {
   // get state of next line button
   poll(next_line_button_pin, next_line_last_debounce_time, next_line_button, 'l', 'n');
 
+  // get state of  prev page button
+  poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p');
+  
+  // get state of next page button
+  poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n');
+
   // conditions
+  curr_line = curr_page[line_ind];
   curr_char = curr_line[str_ind];
   setter = decode(curr_char);
   set_led(setter);
+
+  
 }
 
 void poll(const int button_pin, long &lbt, int &button, char cl, char np){
@@ -95,11 +109,17 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
           }else{
             curr_char=prev_char();
           }
-        }else{
+        }else if(cl=='l'){
           if(np=='n'){
             curr_line=next_line();
           }else{
             curr_line=prev_line();
+          }
+        }else if(cl=='p'){
+          if(np=='n'){
+            curr_page=next_page();
+          }else{
+            curr_page=prev_page();
           }
         }
         lbt=millis();
@@ -108,62 +128,98 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
 }
 
 char next_char(){
-  // if(str_ind==strlen(lines[line_ind])-1){
-  if(str_ind==lines[line_ind].length()-1){
+  if(str_ind==page[line_ind].length()-1){
     str_ind=0;
-    return lines[line_ind][0];
+    return curr_page[line_ind][0];
   }else{
     str_ind++;
-    return lines[line_ind][str_ind];
+    return curr_page[line_ind][str_ind];
   }
 }
 
 char prev_char(){
   if(str_ind==0){
-    // str_ind=strlen(lines[line_ind])-1;
-    str_ind=lines[line_ind].length()-1;
-    return lines[line_ind][str_ind];
+    str_ind=curr_page[line_ind].length()-1;
+    return curr_page[line_ind][str_ind];
   }else{
     str_ind--;
-    return lines[line_ind][str_ind];
+    return curr_page[line_ind][str_ind];
   }
 }
 
-// char* next_line(){
 string next_line(){
-  if(line_ind==num_lines()-1){
+  if(line_ind==curr_page.size()-1){
     line_ind=0;
     str_ind=0;
-    return lines[line_ind];
+    return curr_page[line_ind];
   }else{
     line_ind++;
     str_ind=0;
-    return lines[line_ind];
+    return curr_page[line_ind];
   }
 }
 
-// char* prev_line(){
 string prev_line(){
   if(line_ind==0){
-    line_ind=num_lines()-1;
+    line_ind=curr_page.size()-1;
     str_ind=0;
-    return lines[line_ind];
+    return curr_page[line_ind];
   }else{
     line_ind--;
     str_ind=0;
-    return lines[line_ind];
+    return curr_page[line_ind];
+  }
+}
+
+vector<string> next_page(){
+  if(page_ind==book.size()-1){
+    get_page();
+    return book[page_ind];
+  }else{
+    page_ind++;
+    line_ind=0;
+    str_ind=0;
+    return book[page_ind];
+  }
+}
+
+vector<string> prev_page(){
+  if(page_ind==0){
+    page_ind=0;
+    line_ind=0;
+    str_ind=0;
+    return book[page_ind];
+  }else{
+    page_ind--;
+    line_ind=0;
+    str_ind=0;
+    return book[page_ind];
+  }
+}
+
+void get_page(){
+  // bluetooth
+  new_page=bt_loop(SerialBT, page);
+  if(new_page){
+    if(book.size()==MAX_PAGES){
+      book.erase(book.begin());
+    }
+    book.push_back(page);
+    curr_page=book[page_ind];
+    str_ind=0;
+    line_ind=0;
+    page_ind=book.size()-1;
   }
 }
 
 void set_led(uint8_t c){
-  // conditions for beginning and end of lines
-  if(line_ind==num_lines()-1){
+  // conditions for beginning and end of page
+  if(line_ind==curr_page.size()-1){
     digitalWrite(last_line, HIGH);
   }else{
     digitalWrite(last_line, LOW);
   }
 
-  // if(str_ind==strlen(curr_line)-1){
   if(str_ind==curr_line.length()-1){
     digitalWrite(end_line, HIGH);
   }else{
@@ -201,17 +257,4 @@ void set_led(uint8_t c){
   }else{
     digitalWrite(led0, LOW);
   }
-}
-
-int num_lines(){
-  // int count=0;
-  // for(unsigned i=0; i<MAX_LINES; i++){
-  //   if(lines[i] == 0){
-  //     break;
-  //   }else{
-  //     count++;
-  //   }
-  // }
-  // return count;
-  return lines.size();
 }
