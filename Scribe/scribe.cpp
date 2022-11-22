@@ -24,7 +24,7 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
         }
       }
       if(is_digit && stoi(num_lines)!=0){
-        Serial.write('1');
+        // Serial.write('1');
         SerialBT.write('1');
         page.clear();
         int t=stoi(num_lines);
@@ -36,23 +36,29 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
               holder+=(char)SerialBT.read();
             }
             page.push_back(trim(holder));
-            Serial.write('2');
+            // Serial.write('2');
             SerialBT.write('2');
             t--;
           }
         }
         for(char c: num_lines){
-          Serial.write(c);
+          // Serial.write(c);
           SerialBT.write(c);
         }
         return true;
+      }else if(stoi(num_lines)==0){
+        SerialBT.write('1');
+        for(char c: num_lines){
+          // Serial.write(c);
+          SerialBT.write(c);
+        }
       }
     }
     delay(50);
     return false;
 }
 
-/* ---------- MISC FUNCTION ---------- */
+/* ---------- MISC FUNCTIONS ---------- */
 bool is_lower(char c){
   if(c>=97 && c<=122) return true;
   return false;
@@ -71,6 +77,16 @@ string trim(string s){
   }
   return holder;
 }
+
+void print_info(int page_ind, int line_ind, int str_ind, int book_size, int page_size, string curr_line){
+  string front(curr_line.substr(0,str_ind)), back(curr_line.substr(str_ind+1));
+  string info("LOCATION:\nPage: "+std::to_string(page_ind+1)+" / "+std::to_string(book_size)+"\n"+
+    "Line: "+std::to_string(line_ind+1)+" / "+std::to_string(page_size)+"\n"+
+    "Character: "+std::to_string(str_ind+1)+" / "+std::to_string((int)curr_line.size())+"\n"+
+    "CURRENT PLACE: "+front+" '"+curr_line[str_ind]+"' "+back+"\n\n");
+  Serial.println(info.c_str());
+}
+
 
 uint8_t decode(char c){
   char letter=c;
@@ -145,22 +161,3 @@ uint8_t decode(char c){
     default: return 0b000000;
   }
 }
-
-/* ---------- BLUETOOTH FUNCTIONS ---------- */
-
-// void bt_setup(SoftwareSerial& obj){
-//     pinMode(bt_en_pin, OUTPUT);
-//     digitalWrite(bt_en_pin, HIGH);
-
-//     Serial.begin(BAUD_RATE);
-//     Serial.println("Enter AT Commands:");
-//     //obj.begin(COMMAND_BAUD_RATE);
-// }
-
-// void bt_loop(SoftwareSerial& obj){
-//     if(Serial.available())
-//         obj.write(Serial.read());
-
-//     if(obj.available())
-//         Serial.write(obj.read());
-// }
