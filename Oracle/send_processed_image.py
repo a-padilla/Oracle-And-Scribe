@@ -30,7 +30,7 @@ def process_image(filename):
 	
 def send_image_data(image_data):
 	#MAC address of ESP32
-	addr = "C8:F0:9E:9E:50:42"
+	addr = "C8:F0:9E:9E:E7:C2"
 	#Name of ESP32
 	esp_name = "Scribe"
 
@@ -76,5 +76,5 @@ def send_image_data(image_data):
 	
 	
 if __name__ == "__main__":
-	image_data = process_image("./images/test1.jpg")
+	image_data = process_image("./images/image_to_translate.jpg")
 	send_image_data(image_data)
