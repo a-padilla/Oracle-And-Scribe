@@ -22,7 +22,8 @@ long debounce_delay=250;
 
 vector<vector<string>> book;
 vector<string> page;
-uint8_t str_ind=0, line_ind=0, page_ind=0, setter;
+int str_ind=0, line_ind=0, page_ind=0;
+uint8_t setter;
 char curr_char;
 string curr_line;
 vector<string> curr_page;
@@ -48,9 +49,15 @@ void setup() {
   page.push_back("Austin");
   book.push_back(page);
 
+  page.clear();
+  page.push_back("Hello");
+  page.push_back("World");
+  book.push_back(page);
+
   curr_page = book[page_ind];
   curr_line = curr_page[line_ind];
   curr_char = curr_line[str_ind];
+  print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
   
   //leds
   pinMode(led0, OUTPUT);
@@ -61,6 +68,7 @@ void setup() {
   pinMode(led5, OUTPUT);
   pinMode(last_line, OUTPUT);
   pinMode(end_line, OUTPUT);
+  pinMode(last_page, OUTPUT);
   // buttons
   pinMode(prev_button_pin, INPUT);
   pinMode(next_button_pin, INPUT);
@@ -90,36 +98,47 @@ void loop() {
   poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n');
 
   // conditions
+  // curr_page = book[page_ind];
   curr_line = curr_page[line_ind];
   curr_char = curr_line[str_ind];
   setter = decode(curr_char);
   set_led(setter);
-
-  
 }
 
 void poll(const int button_pin, long &lbt, int &button, char cl, char np){
     button=digitalRead(button_pin);
     if(((long)millis()-lbt)>debounce_delay){
-      // if button pressed, get next char
+      // if button pressed
       if(button==HIGH){
         if(cl=='c'){
           if(np=='n'){
             curr_char=next_char();
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }else{
             curr_char=prev_char();
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }
         }else if(cl=='l'){
           if(np=='n'){
             curr_line=next_line();
+            curr_char=curr_line[str_ind];
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }else{
             curr_line=prev_line();
+            curr_char=curr_line[str_ind];
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }
         }else if(cl=='p'){
           if(np=='n'){
             curr_page=next_page();
+            curr_line=curr_page[line_ind];
+            curr_char=curr_line[str_ind];
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }else{
             curr_page=prev_page();
+            curr_line=curr_page[line_ind];
+            curr_char=curr_line[str_ind];
+            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
           }
         }
         lbt=millis();
@@ -205,7 +224,6 @@ void get_page(){
       book.erase(book.begin());
     }
     book.push_back(page);
-    curr_page=book[page_ind];
     str_ind=0;
     line_ind=0;
     page_ind=book.size()-1;
@@ -218,6 +236,12 @@ void set_led(uint8_t c){
     digitalWrite(last_line, HIGH);
   }else{
     digitalWrite(last_line, LOW);
+  }
+
+  if(page_ind==book.size()-1){
+    digitalWrite(last_page, HIGH);
+  }else{
+    digitalWrite(last_page, LOW);
   }
 
   if(str_ind==curr_line.length()-1){

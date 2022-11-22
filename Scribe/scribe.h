@@ -12,9 +12,6 @@ using namespace std;
 #error Bluetooth is not enabled! Please run `make menuconfig` to and enable it
 #endif
 
-void bt_setup(BluetoothSerial& SerialBT);
-bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
-
 // button pins for chars
 const int prev_button_pin = 2;
 const int next_button_pin = 15;
@@ -30,6 +27,8 @@ const int next_page_button_pin = 18;
 // led pins for beginning/end of line
 const int last_line = 16;
 const int end_line = 4;
+const int last_page = 25;
+
 
 // led pins for chars
 const int led0 = 12;
@@ -39,12 +38,13 @@ const int led3 = 26;
 const int led4 = 33;
 const int led5 = 32;
 
+// bluetooth
+void bt_setup(BluetoothSerial& SerialBT);
+bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
+
 // misc functions
 char to_upper(char c);
 bool is_lower(char c);
 uint8_t decode(char c);
 string trim(string s);
-
-// bluetooth functions
-// void bt_setup(SoftwareSerial& obj);
-// void bt_loop(SoftwareSerial& obj);
+void print_info(int page_ind, int line_ind, int str_ind, int book_size, int page_size, string curr_line);
