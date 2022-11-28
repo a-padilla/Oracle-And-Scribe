@@ -4,7 +4,7 @@
 void bt_setup(BluetoothSerial& SerialBT){
     Serial.begin(115200);
     SerialBT.begin("Scribe"); //Bluetooth device name
-    Serial.println("The device started, now you can pair it with bluetooth!");
+    Serial.println("The device started, now you can pair it with bluetooth!\n");
 }
 
 bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
