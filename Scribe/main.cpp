@@ -31,17 +31,78 @@ bool new_page=false;
 
 BluetoothSerial SerialBT;
 
-// functions
+/* ========== FUNCTIONS ========== */
+
+/**
+ * @brief 
+ * 
+ * @param button_pin Pin of ESP32 to which the button is connected.
+ * @param lbt Last debounce time of button.
+ * @param button State of the button (HIGH/LOW).
+ * @param cl Tells whether the button is for a character, line, or page.
+ * @param np Tells whether the butto is for the next or previous.
+ */
 void poll(const int button_pin, long &lbt, int &button, char cl, char np);
+
+/**
+ * @brief Updates the string index and returns the next character.
+ * 
+ * @return char Next character.
+ */
 char next_char();
+
+/**
+ * @brief Updates the string index and returns the previous character.
+ * 
+ * @return char Previous character.
+ */
 char prev_char();
+
+/**
+ * @brief Updates the line index and returns the next line.
+ * 
+ * @return string Next line.
+ */
 string next_line();
+
+/**
+ * @brief Updates the line index and returns the previous line.
+ * 
+ * @return string Previous line.
+ */
 string prev_line();
+
+/**
+ * @brief Updates the page index and returns the next page. If on the last page, then calls get_page.
+ * 
+ * @return vector<string> Next page.
+ */
 vector<string> next_page();
+
+/**
+ * @brief Updates the page index and returns the previous page.
+ * 
+ * @return vector<string> Previous page.
+ */
 vector<string> prev_page();
+
+/**
+ * @brief Set the LEDs with the current character.
+ * 
+ * @param c Current character.
+ */
 void set_led(uint8_t c);
+
+/**
+ * @brief Calls bt_loop. If a new page is loaded, put the new page in the book.
+ * 
+ */
 void get_page();
 
+/**
+ * @brief Initialize the ESP32: Hard-code initial book values, print initial line info, and set pin modes.
+ * 
+ */
 void setup() {
   bt_setup(SerialBT);
   page.push_back("Bradley");
@@ -78,6 +139,11 @@ void setup() {
   pinMode(next_page_button_pin, INPUT);
 }
 
+
+/**
+ * @brief ESP32 loop: poll buttons, set the current line and character, and set the LEDs.
+ * 
+ */
 void loop() {
   // get state of  prev char button
   poll(prev_button_pin, prev_last_debounce_time, prev_button, 'c', 'p');
