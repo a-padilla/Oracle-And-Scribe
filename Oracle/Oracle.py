@@ -29,11 +29,22 @@ class Oracle(Camera):
 		esp_mac_addr = None
 		
 		def __init__(self, esp_mac_addr):
+			self.esp_mac_addr = esp_mac_addr
 			self.connect_to_scribe(esp_mac_addr)
+		
+		def retry(self):
+			try:
+				self.connect_to_scribe(self.esp_mac_addr)
+				return True
+			except:
+				return False
 			
 		def connect_to_scribe(self,esp_mac_addr):
 			self.esp_mac_addr = esp_mac_addr
 			found_service = find_service( address = self.esp_mac_addr)
+			
+			if len(found_service) == 0:
+				raise Exception("Bluetooth connection failed")
 
 			self.scribe = found_service[0]
 
@@ -62,14 +73,27 @@ class Oracle(Camera):
 	cam = None
 	_value_lock = None
 	connection = None
+	addr = "C8:F0:9E:9E:E7:C2"
 	
 	def __init__(self, width=640, height=360):
-		addr = "C8:F0:9E:9E:E7:C2"
+		
 		Camera.__init__(self)
-		self.connection = self.Connection(addr)
+		#self.connection = self.Connection(addr)
+		
+	def connect(self):
+		self.connection = self.Connection(self.addr)
+		
+	def retry_connection(self):
+		try:
+			if self.connection == None:
+				self.connection = self.Connection(self.addr)
+				return True
+		except:
+			return False
+		return self.connection.retry()
 		
 	def close(self):
-		Camera.close()
+		Camera.close(self)
 		self.connection.close_connection()
  
 	
@@ -79,7 +103,10 @@ class Oracle(Camera):
 		text_from_image = pytesseract.image_to_string(Image.open(filename))
 		
 		def strippy(s):
-			"""Takes a string and separates it into lines to send to the Scribe"""
+			for c in s:
+				ascii_val = c.encode('utf-8')[0]
+				if ascii_val < 32 or ascii_val > 126:
+				    s = s.replace(c,'')
 			return s.strip().encode('UTF-8')
 
 		lines = text_from_image.split('\n')
@@ -100,6 +127,9 @@ class Oracle(Camera):
 		If not connected, throw an error.
 		"""
 		
+		if len(lines) <= 0:
+			return False
+			
 		#send number of lines
 		self.connection.sock.send(str(len(lines)))
 		
@@ -115,6 +145,9 @@ class Oracle(Camera):
 				print(response)
 				if response != b'2':
 					break
+		time.sleep(0.1)
 		print(self.connection.sock.recv(1024))
+		
+		return True
 		
 
