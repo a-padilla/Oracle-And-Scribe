@@ -8,6 +8,7 @@ except ImportError:
     import Image
 import pytesseract
 import numpy as np
+import cv2
 from bluetooth import *
 sys.path.append('./camera')
 from RpiCamera import Camera
@@ -96,30 +97,34 @@ class Oracle(Camera):
 		Camera.close(self)
 		self.connection.close_connection()
  
-	
+	def pre_process_image(self, image):
+		# convert img from pillow to cv2
+		image = np.array(image)
+		image = cv2.resize(image, None, fx=1.2, fy=1.2, interpolation=cv2.INTER_CUBIC)
+		# skip converting to grayscale if image is already grayscale
+		if len(image.shape) == 2:
+			pass
+		else:
+			image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+		kernel = np.ones((1, 1), np.uint8)
+		image = cv2.dilate(image, kernel, iterations=1)
+		image = cv2.erode(image, kernel, iterations=1)
+		# convert back to pillow
+		return Image.fromarray(image)
         
-	def process_image(self, filename):
+	def process_image(self, image):
 		"""Take an image and process it into usable lines that can be sent to the Scribe"""
-		text_from_image = pytesseract.image_to_string(Image.open(filename))
 		
-		def strippy(s):
-			for c in s:
-				ascii_val = c.encode('utf-8')[0]
-				if ascii_val < 32 or ascii_val > 126:
-				    s = s.replace(c,'')
-			return s.strip().encode('UTF-8')
+		text_from_image = pytesseract.image_to_string(image)
 
-		lines = text_from_image.split('\n')
-		clean = np.array(lines)
-		stripper = np.vectorize(strippy)
-		clean = stripper(clean)
-		clean = clean[clean!=''.encode('UTF-8')]
-
-		print(len(clean))
-		for i in range(len(clean)):
-			print(clean[i])
-
+		# remove all non-ascii characters, and encode to utf-8
+		clean = [''.join([i if ord(i) <= 126 and ord(i) >= 32 else '' for i in s]).encode('utf-8') for s in text_from_image.split('\n')]
+		
+		# remove all empty strings
+		clean = [s for s in clean if s != b'']
+		print(*clean, sep = '\n')
 		return clean
+
 	
 	def send_lines(self, lines):
 		"""Send lines to the Scribe
