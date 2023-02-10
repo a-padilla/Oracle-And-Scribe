@@ -1,5 +1,12 @@
 # Oracle and Scribe
 
+Members:
+- Austin
+- Bradley
+- Torie
+- Anthony
+- Richie
+
 Repo for the Oracle OCR Glasses and Scribe Refreshable Braille Display
 
 Senior Design Project for CEN3907
