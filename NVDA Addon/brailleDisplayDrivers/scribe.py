@@ -17,24 +17,27 @@ class BrailleDisplayDriver(braille.BrailleDisplayDriver):
 	"""scribe braille display driver."""
 	name = "Scribe"
 	description = "Scribe braille display"
-	numCells = 1
-
+	numCells = 100
+	mapString = " A1B'K2L@CIF/MSP\"E3H9O6R^DJG>NTQ,*5<-U8V.%[$+X!&;:4\\0Z7(_?W]#Y)="
+	_ser = None
 	@classmethod
 	def check(cls):
 		'''determines if this driver is available'''
 		return True
 	
-	def connectBluetooth(self, esp_mac_addr: str):
+	def connectBluetooth(self):
 		for portInfo in sorted(hwPortUtils.listComPorts(onlyAvailable=True), key=lambda item: "bluetoothName" in item):
 			port = portInfo["port"]
+			#print portInfo
 			if "bluetoothName" in portInfo:
-				if portInfo["bluetoothName"][0:5] == "Scribe":
+				log.info("connectBluetooth %s"%portInfo["bluetoothName"])
+				if "Scribe" in portInfo["bluetoothName"]:
+					log.info("attempting to connect to scribe")
 					try:
 						self._ser = serial.Serial(port, baudrate = 115200,timeout = .2, writeTimeout = .2)
 						log.info("connectBluetooth success")
 					except:
 						log.debugWarning("connectBluetooth failed")
-		
 	def terminate(self):
 		try:
 			super(BrailleDisplayDriver, self).terminate()
@@ -43,10 +46,12 @@ class BrailleDisplayDriver(braille.BrailleDisplayDriver):
 
 	def __init__(self):
 		"""initialize driver"""
+		log.info("init")
 		super(BrailleDisplayDriver, self).__init__()
-		if self.scribe is None:
-			self.connectBluetooth(self.addr)
+		if self._ser is None:
+			self.connectBluetooth()
 
 	def display(self, cells: List[int]):
 		"""write to braille display"""
+		log.info("sending: %s"%[self.mapString[i] for i in cells if i < 64])
 		self._ser.write(cells)
