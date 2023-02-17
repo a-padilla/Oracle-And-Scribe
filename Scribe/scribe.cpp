@@ -1,5 +1,5 @@
 #include "scribe.h"
-
+bool is_oracle = false;
 /* ---------- BLUETOOTH ---------- */
 void bt_setup(BluetoothSerial& SerialBT){
     Serial.begin(115200);
@@ -12,6 +12,11 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
     bool is_digit=false;
     string num_lines="",holder="";
     if (SerialBT.available()) {
+      for(int i = 0; i < len(SerialBT.list(); i++)){
+        if(SerialBT.list()[i]["name"] == "Oracle"){
+          is_oracle = true;
+        }
+      }
       while(SerialBT.available()){
         num_lines+=(char)SerialBT.read();
       }
@@ -89,6 +94,9 @@ void print_info(int page_ind, int line_ind, int str_ind, int book_size, int page
 
 
 uint8_t decode(char c){
+  if(!is_oracle){
+    retun (uint8_t)(c);
+  }
   char letter=c;
   if(is_lower(c)){
     letter = to_upper(c);
