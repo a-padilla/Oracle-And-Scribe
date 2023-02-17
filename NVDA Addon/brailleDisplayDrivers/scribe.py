@@ -53,5 +53,14 @@ class BrailleDisplayDriver(braille.BrailleDisplayDriver):
 
 	def display(self, cells: List[int]):
 		"""write to braille display"""
-		log.info("sending: %s"%[self.mapString[i] for i in cells if i < 64])
-		self._ser.write(cells)
+		for i in range(len(cells)):
+			if cells[i] > 64:
+				log.info(cells[i])
+				cells[i] = 0
+		newString += " " + "".join([self.mapString[i] for i in cells])
+		#remove trailing spaces
+		newString = newString.rstrip()
+		log.info(newString)
+		#convert to utf-8
+		newString = newString.encode("utf-8")
+		self._ser.write(newString)

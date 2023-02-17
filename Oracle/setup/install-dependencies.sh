@@ -18,5 +18,3 @@ sudo pip3 install numpy --upgrade
 sudo apt install bluetooth bluez blueman
 
 sudo pip3 install pybluez
-
-sudo pip3 install opencv-python
