@@ -4,7 +4,7 @@
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 
 int servoMin = 204;   // 0 degrees
-int servoMax = 409;   // 90 degrees
+int servoMax = 250;   // ~3.22 degrees
 int servoFrequency = 50; // servo update frequency, analog servos typically run at ~50 Hz
 
 void setup() {
@@ -27,9 +27,17 @@ void loop() {
 
     // Set the servo position based on the input state
     if (inputState) {
-      pwm1.setPWM(i, 0, servoMax);
+      if(i>2){
+        pwm1.setPWM(i, 0, servoMax);
+      }else{
+        pwm1.setPWM(i, 0, servoMin);  
+      }
     } else {
-      pwm1.setPWM(i, 0, servoMin);
+      if(i>2){
+        pwm1.setPWM(i, 0, servoMin);
+      }else{
+        pwm1.setPWM(i, 0, servoMax);  
+      }
     }
   }
 }
