@@ -100,7 +100,7 @@ string burst_from_page(string current_page, int burst_index){
     return current_page.substr(burst_index*BURST_LEN, BURST_LEN);  
   }else{
     string temp = current_page.substr(burst_index*BURST_LEN);
-    for(unsigned i=temp.length(); i<5; i++){
+    for(unsigned i=temp.length(); i<BURST_LEN; i++){
       temp += " ";
     }
     return temp;
