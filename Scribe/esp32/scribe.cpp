@@ -78,13 +78,43 @@ string trim(string s){
   return holder;
 }
 
-void print_info(int page_ind, int line_ind, int str_ind, int book_size, int page_size, string curr_line){
-  string front(curr_line.substr(0,str_ind)), back(curr_line.substr(str_ind+1));
+void print_info(int page_ind, int burst_ind, int book_size, int page_size, string curr_page, string curr_burst){
+  int highest = curr_page.length()/BURST_LEN;
+  if(curr_page.length()%BURST_LEN!=0){
+    highest++;
+  }
+  
+  string front(curr_page.substr(0,BURST_LEN*burst_ind));
+  string back="";
+  if(!last_burst(curr_page, burst_ind)){
+    back =curr_page.substr(BURST_LEN*(burst_ind+1), curr_page.length()-1);
+  }
   string info("LOCATION:\nPage: "+std::to_string(page_ind+1)+" / "+std::to_string(book_size)+"\n"+
-    "Line: "+std::to_string(line_ind+1)+" / "+std::to_string(page_size)+"\n"+
-    "Character: "+std::to_string(str_ind+1)+" / "+std::to_string((int)curr_line.size())+"\n"+
-    "CURRENT PLACE: "+front+" '"+curr_line[str_ind]+"' "+back+"\n\n");
+    "Burst: "+std::to_string(burst_ind+1)+" / "+std::to_string(highest)+"\n"+
+    "CURRENT PLACE: "+front+" '"+curr_burst+"' "+back+"\n\n");
   Serial.println(info.c_str());
+}
+
+string burst_from_page(string current_page, int burst_index){
+  if(burst_index<current_page.length()/BURST_LEN){
+    return current_page.substr(burst_index*BURST_LEN, BURST_LEN);  
+  }else{
+    string temp = current_page.substr(burst_index*BURST_LEN);
+    for(unsigned i=temp.length(); i<5; i++){
+      temp += " ";
+    }
+    return temp;
+  }
+}
+
+bool last_burst(string curr_page, int burst_ind){
+  int highest = curr_page.length()/BURST_LEN;
+  if(curr_page.length()%BURST_LEN==0){
+    highest--;
+  }
+
+  if(burst_ind==highest) return true;
+  else return false;
 }
 
 

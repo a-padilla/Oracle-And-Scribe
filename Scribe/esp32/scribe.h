@@ -6,6 +6,7 @@
 using namespace std;
 
 #define MAX_PAGES 3
+#define BURST_LEN 5
 
 // BLUETOOTH
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -13,21 +14,16 @@ using namespace std;
 #endif
 
 // button pins for chars
-const int prev_button_pin = 2;
-const int next_button_pin = 15;
-
-// button pins for lines
-const int prev_line_button_pin = 5;
-const int next_line_button_pin = 17;
+const int prev_burst_button_pin = 2;
+const int next_burst_button_pin = 15;
 
 // button pins for pages
 const int prev_page_button_pin = 19;
 const int next_page_button_pin = 18;
 
 // led pins for beginning/end of line
-const int last_line = 16;
-const int end_line = 4;
-const int last_page = 25;
+const int last_burst_pin = 4;
+const int last_page_pin = 16;
 
 
 // led pins for chars
@@ -106,4 +102,21 @@ string trim(string s);
  * @param page_size Total lines in page.
  * @param curr_line Current line.
  */
-void print_info(int page_ind, int line_ind, int str_ind, int book_size, int page_size, string curr_line);
+void print_info(int page_ind, int burst_ind, int book_size, int page_size, string curr_page, string curr_burst);
+
+/**
+ * @brief Return burst given the current page and burst index.
+ * 
+ * @param current_page Current page.
+ * @param burst_index Burst index.
+ * @return string Burst at the given burst index.
+ */
+string burst_from_page(string current_page, int burst_index);
+
+/**
+ * @brief Determines whether or not the current burst is the last burst of the page.
+ * 
+ * @return true The current burst is the last burst.
+ * @return false The current burst is not the last burst.
+ */
+bool last_burst(string curr_page, int burst_ind);

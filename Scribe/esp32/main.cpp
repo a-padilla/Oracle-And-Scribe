@@ -5,28 +5,23 @@ using std::string;
 using std::vector;
 #include "scribe.h"
 
-int prev_button = LOW;
-int next_button = LOW;
-int prev_line_button = LOW;
-int next_line_button = LOW;
+int prev_burst_button = LOW;
+int next_burst_button = LOW;
 int prev_page_button = LOW;
 int next_page_button = LOW;
 
-long prev_last_debounce_time=0;
-long next_last_debounce_time=0;
-long prev_line_last_debounce_time=0;
-long next_line_last_debounce_time=0;
+long prev_burst_last_debounce_time=0;
+long next_burst_last_debounce_time=0;
 long prev_page_last_debounce_time=0;
 long next_page_last_debounce_time=0;
 long debounce_delay=250;
 
-vector<vector<string>> book;
+vector<string> book;
 vector<string> page;
-int str_ind=0, line_ind=0, page_ind=0;
+int char_ind=0, burst_ind=0, page_ind=0;
 uint8_t setter;
-char curr_char;
-string curr_line;
-vector<string> curr_page;
+string curr_burst;
+string curr_page;
 bool new_page=false;
 
 BluetoothSerial SerialBT;
@@ -45,46 +40,32 @@ BluetoothSerial SerialBT;
 void poll(const int button_pin, long &lbt, int &button, char cl, char np);
 
 /**
- * @brief Updates the string index and returns the next character.
+ * @brief Update the char and burst index and get the next burst in a page.
  * 
- * @return char Next character.
+ * @return string Next burst. 
  */
-char next_char();
+string next_burst();
 
 /**
- * @brief Updates the string index and returns the previous character.
+ * @brief Update the char and burst index and get the prev burst in a page.
  * 
- * @return char Previous character.
+ * @return string Previous burst.
  */
-char prev_char();
-
-/**
- * @brief Updates the line index and returns the next line.
- * 
- * @return string Next line.
- */
-string next_line();
-
-/**
- * @brief Updates the line index and returns the previous line.
- * 
- * @return string Previous line.
- */
-string prev_line();
+string prev_burst();
 
 /**
  * @brief Updates the page index and returns the next page. If on the last page, then calls get_page.
  * 
- * @return vector<string> Next page.
+ * @return string Next page.
  */
-vector<string> next_page();
+string next_page();
 
 /**
  * @brief Updates the page index and returns the previous page.
  * 
- * @return vector<string> Previous page.
+ * @return string Previous page.
  */
-vector<string> prev_page();
+string prev_page();
 
 /**
  * @brief Set the LEDs with the current character.
@@ -100,6 +81,14 @@ void set_led(uint8_t c);
 void get_page();
 
 /**
+ * @brief Convert page from a vector of strings to one string.
+ * 
+ * @param old_page Page as vector of strings.
+ * @return string Page as one string.
+ */
+string change_page_format(vector<string> old_page);
+
+/**
  * @brief Initialize the ESP32: Hard-code initial book values, print initial line info, and set pin modes.
  * 
  */
@@ -108,17 +97,16 @@ void setup() {
   page.push_back("Bradley");
   page.push_back("Torie");
   page.push_back("Austin");
-  book.push_back(page);
+  book.push_back(change_page_format(page));
 
   page.clear();
   page.push_back("Hello");
   page.push_back("World");
-  book.push_back(page);
+  book.push_back(change_page_format(page));
 
   curr_page = book[page_ind];
-  curr_line = curr_page[line_ind];
-  curr_char = curr_line[str_ind];
-  print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
+  curr_burst = burst_from_page(curr_page, burst_ind);
+  print_info(page_ind, burst_ind, (int)book.size(), (int)curr_page.size(), curr_page, curr_burst);
   
   //leds
   pinMode(led0, OUTPUT);
@@ -127,14 +115,11 @@ void setup() {
   pinMode(led3, OUTPUT);
   pinMode(led4, OUTPUT);
   pinMode(led5, OUTPUT);
-  pinMode(last_line, OUTPUT);
-  pinMode(end_line, OUTPUT);
-  pinMode(last_page, OUTPUT);
+  pinMode(last_burst_pin, OUTPUT);
+  pinMode(last_page_pin, OUTPUT);
   // buttons
-  pinMode(prev_button_pin, INPUT);
-  pinMode(next_button_pin, INPUT);
-  pinMode(prev_line_button_pin, INPUT);
-  pinMode(next_line_button_pin, INPUT);
+  pinMode(prev_burst_button_pin, INPUT);
+  pinMode(next_burst_button_pin, INPUT);
   pinMode(prev_page_button_pin, INPUT);
   pinMode(next_page_button_pin, INPUT);
 }
@@ -146,16 +131,10 @@ void setup() {
  */
 void loop() {
   // get state of  prev char button
-  poll(prev_button_pin, prev_last_debounce_time, prev_button, 'c', 'p');
+  poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p');
   
   // get state of next char button
-  poll(next_button_pin, next_last_debounce_time, next_button, 'c', 'n');
-
-  // get state of  prev line button
-  poll(prev_line_button_pin, prev_line_last_debounce_time, prev_line_button, 'l', 'p');
-  
-  // get state of next line button
-  poll(next_line_button_pin, next_line_last_debounce_time, next_line_button, 'l', 'n');
+  poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n');
 
   // get state of  prev page button
   poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p');
@@ -165,10 +144,11 @@ void loop() {
 
   // conditions
   // curr_page = book[page_ind];
-  curr_line = curr_page[line_ind];
-  curr_char = curr_line[str_ind];
-  setter = decode(curr_char);
-  set_led(setter);
+  curr_burst = burst_from_page(curr_page, burst_ind);
+  if(curr_burst!=""){
+    setter = decode(curr_burst[0]);
+    set_led(setter);
+  }
 }
 
 void poll(const int button_pin, long &lbt, int &button, char cl, char np){
@@ -176,35 +156,23 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
     if(((long)millis()-lbt)>debounce_delay){
       // if button pressed
       if(button==HIGH){
-        if(cl=='c'){
+        if(cl=='b'){
           if(np=='n'){
-            curr_char=next_char();
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
+            curr_burst=next_burst();
+            print_info(page_ind, burst_ind, (int)book.size(), (int)curr_page.size(), curr_page, curr_burst);
           }else{
-            curr_char=prev_char();
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
-          }
-        }else if(cl=='l'){
-          if(np=='n'){
-            curr_line=next_line();
-            curr_char=curr_line[str_ind];
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
-          }else{
-            curr_line=prev_line();
-            curr_char=curr_line[str_ind];
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
+            curr_burst=prev_burst();
+            print_info(page_ind, burst_ind, (int)book.size(), (int)curr_page.size(), curr_page, curr_burst);
           }
         }else if(cl=='p'){
           if(np=='n'){
             curr_page=next_page();
-            curr_line=curr_page[line_ind];
-            curr_char=curr_line[str_ind];
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
+            curr_burst = burst_from_page(curr_page, burst_ind);
+            print_info(page_ind, burst_ind, (int)book.size(), (int)curr_page.size(), curr_page, curr_burst);
           }else{
             curr_page=prev_page();
-            curr_line=curr_page[line_ind];
-            curr_char=curr_line[str_ind];
-            print_info(page_ind, line_ind, str_ind, (int)book.size(), (int)curr_page.size(), curr_line);
+            curr_burst = burst_from_page(curr_page, burst_ind);
+            print_info(page_ind, burst_ind, (int)book.size(), (int)curr_page.size(), curr_page, curr_burst);
           }
         }
         lbt=millis();
@@ -212,72 +180,51 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
     }
 }
 
-char next_char(){
-  if(str_ind==curr_line.length()-1){
-    str_ind=0;
-    return curr_line[0];
+string next_burst(){
+  if(!last_burst(curr_page, burst_ind)){
+    char_ind += BURST_LEN;
+    burst_ind++;
+    return burst_from_page(curr_page, burst_ind);
   }else{
-    str_ind++;
-    return curr_line[str_ind];
+    char_ind=0;
+    burst_ind=0;
+    return burst_from_page(curr_page, burst_ind);
   }
 }
 
-char prev_char(){
-  if(str_ind==0){
-    str_ind=curr_line.length()-1;
-    return curr_line[str_ind];
+string prev_burst(){
+  if(burst_ind==0){
+    char_ind=0;
+    return curr_burst;
   }else{
-    str_ind--;
-    return curr_line[str_ind];
+    burst_ind--;
+    char_ind-=BURST_LEN;
+    return burst_from_page(curr_page, burst_ind);
   }
 }
 
-string next_line(){
-  if(line_ind==curr_page.size()-1){
-    line_ind=0;
-    str_ind=0;
-    return curr_page[line_ind];
-  }else{
-    line_ind++;
-    str_ind=0;
-    return curr_page[line_ind];
-  }
-}
-
-string prev_line(){
-  if(line_ind==0){
-    line_ind=curr_page.size()-1;
-    str_ind=0;
-    return curr_page[line_ind];
-  }else{
-    line_ind--;
-    str_ind=0;
-    return curr_page[line_ind];
-  }
-}
-
-vector<string> next_page(){
+string next_page(){
   if(page_ind==book.size()-1){
     get_page();
     return book[page_ind];
   }else{
     page_ind++;
-    line_ind=0;
-    str_ind=0;
+    char_ind=0;
+    burst_ind=0;
     return book[page_ind];
   }
 }
 
-vector<string> prev_page(){
+string prev_page(){
   if(page_ind==0){
     page_ind=0;
-    line_ind=0;
-    str_ind=0;
+    char_ind=0;
+    burst_ind=0;
     return book[page_ind];
   }else{
     page_ind--;
-    line_ind=0;
-    str_ind=0;
+    char_ind=0;
+    burst_ind=0;
     return book[page_ind];
   }
 }
@@ -289,31 +236,35 @@ void get_page(){
     if(book.size()==MAX_PAGES){
       book.erase(book.begin());
     }
-    book.push_back(page);
-    str_ind=0;
-    line_ind=0;
+    book.push_back(change_page_format(page));
+    char_ind=0;
+    burst_ind=0;
     page_ind=book.size()-1;
   }
 }
 
+string change_page_format(vector<string> old_page){
+  string _page;
+  for(unsigned i=0; i<old_page.size(); i++){
+    _page.append(old_page[i]);
+    if(i!=old_page.size()-1)
+      _page.append(" ");
+  }
+  return _page;
+}
+
 void set_led(uint8_t c){
   // conditions for beginning and end of page
-  if(line_ind==curr_page.size()-1){
-    digitalWrite(last_line, HIGH);
-  }else{
-    digitalWrite(last_line, LOW);
-  }
-
   if(page_ind==book.size()-1){
-    digitalWrite(last_page, HIGH);
+    digitalWrite(last_page_pin, HIGH);
   }else{
-    digitalWrite(last_page, LOW);
+    digitalWrite(last_page_pin, LOW);
   }
 
-  if(str_ind==curr_line.length()-1){
-    digitalWrite(end_line, HIGH);
+  if(last_burst(curr_page, burst_ind)){
+    digitalWrite(last_burst_pin, HIGH);
   }else{
-    digitalWrite(end_line, LOW);
+    digitalWrite(last_burst_pin, LOW);
   }
 
   // conditions for characters
