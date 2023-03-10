@@ -126,14 +126,14 @@ void setup() {
 
 
 /**
- * @brief ESP32 loop: poll buttons, set the current line and character, and set the LEDs.
+ * @brief ESP32 loop: poll buttons, set the current page and burst, and set the LEDs.
  * 
  */
 void loop() {
-  // get state of  prev char button
+  // get state of  prev burst button
   poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p');
   
-  // get state of next char button
+  // get state of next burst button
   poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n');
 
   // get state of  prev page button
@@ -142,8 +142,7 @@ void loop() {
   // get state of next page button
   poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n');
 
-  // conditions
-  // curr_page = book[page_ind];
+  // set burst and pins
   curr_burst = burst_from_page(curr_page, burst_ind);
   if(curr_burst!=""){
     setter = decode(curr_burst[0]);
@@ -186,8 +185,6 @@ string next_burst(){
     burst_ind++;
     return burst_from_page(curr_page, burst_ind);
   }else{
-    char_ind=0;
-    burst_ind=0;
     return burst_from_page(curr_page, burst_ind);
   }
 }
