@@ -120,8 +120,6 @@ bool last_burst(string curr_page, int burst_ind){
 string char_to_braille(char chr){
   string _ba="";
   uint8_t byte = decode(chr);
-  _ba.append(to_string((int)((byte & BIT7) >> 7)));
-  _ba.append(to_string((int)((byte & BIT6) >> 6)));
   _ba.append(to_string((int)((byte & BIT5) >> 5)));
   _ba.append(to_string((int)((byte & BIT4) >> 4)));
   _ba.append(to_string((int)((byte & BIT3) >> 3)));
