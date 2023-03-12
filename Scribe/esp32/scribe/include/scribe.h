@@ -120,3 +120,19 @@ string burst_from_page(string current_page, int burst_index);
  * @return false The current burst is not the last burst.
  */
 bool last_burst(string curr_page, int burst_ind);
+
+/**
+ * @brief Translate single char to string of a braille ascii byte.
+ * 
+ * @param chr Single character to convert to braille ascii.
+ * @return string String of braille ascii byte from char.
+ */
+string char_to_braille(char chr);
+
+/**
+ * @brief Translate burst string to string of braille ascii bytes.
+ * 
+ * @param burst Burst to convert to braille ascii.
+ * @return string String of braille ascii bytes from burst.
+ */
+string burst_to_braille(string burst);

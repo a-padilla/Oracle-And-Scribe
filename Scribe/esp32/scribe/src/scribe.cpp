@@ -117,6 +117,27 @@ bool last_burst(string curr_page, int burst_ind){
   else return false;
 }
 
+string char_to_braille(char chr){
+  string _ba="";
+  uint8_t byte = decode(chr);
+  _ba.append(to_string((int)((byte & BIT7) >> 7)));
+  _ba.append(to_string((int)((byte & BIT6) >> 6)));
+  _ba.append(to_string((int)((byte & BIT5) >> 5)));
+  _ba.append(to_string((int)((byte & BIT4) >> 4)));
+  _ba.append(to_string((int)((byte & BIT3) >> 3)));
+  _ba.append(to_string((int)((byte & BIT2) >> 2)));
+  _ba.append(to_string((int)((byte & BIT1) >> 1)));
+  _ba.append(to_string((int)(byte & BIT0)));
+  return _ba;
+}
+
+string burst_to_braille(string burst){
+  string _ba="";
+  for(char ch : burst){
+    _ba.append(char_to_braille(ch));
+  }
+  return _ba;
+}
 
 uint8_t decode(char c){
   char letter=c;
