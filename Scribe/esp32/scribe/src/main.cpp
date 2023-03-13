@@ -252,47 +252,14 @@ string change_page_format(vector<string> old_page){
 
 void set_led(uint8_t c){
   // conditions for beginning and end of page
-  if(page_ind==book.size()-1){
-    digitalWrite(last_page_pin, HIGH);
-  }else{
-    digitalWrite(last_page_pin, LOW);
-  }
-
-  if(last_burst(curr_page, burst_ind)){
-    digitalWrite(last_burst_pin, HIGH);
-  }else{
-    digitalWrite(last_burst_pin, LOW);
-  }
+  page_ind==book.size() ? digitalWrite(last_page_pin, HIGH) : digitalWrite(last_page_pin, LOW);
+  last_burst(curr_page, burst_ind) ? digitalWrite(last_burst_pin, HIGH) : digitalWrite(last_burst_pin, LOW);
 
   // conditions for characters
-  if((c & 0b1) == 1){
-    digitalWrite(led5, HIGH);
-  }else{
-    digitalWrite(led5, LOW);
-  }
-  if(((c>>1) & 0b1) == 1){
-    digitalWrite(led4, HIGH);
-  }else{
-    digitalWrite(led4, LOW);
-  }
-  if(((c>>2) & 0b1) == 1){
-    digitalWrite(led3, HIGH);
-  }else{
-    digitalWrite(led3, LOW);
-  }
-  if(((c>>3) & 0b1) == 1){
-    digitalWrite(led2, HIGH);
-  }else{
-    digitalWrite(led2, LOW);
-  }
-  if(((c>>4) & 0b1) == 1){
-    digitalWrite(led1, HIGH);
-  }else{
-    digitalWrite(led1, LOW);
-  }
-  if(((c>>5) & 0b1) == 1){
-    digitalWrite(led0, HIGH);
-  }else{
-    digitalWrite(led0, LOW);
-  }
+  (c & 0b1) == 1 ? digitalWrite(led5, HIGH) : digitalWrite(led5, LOW);
+  ((c>>1) & 0b1) == 1 ? digitalWrite(led4, HIGH) : digitalWrite(led4, LOW);
+  ((c>>2) & 0b1) == 1 ? digitalWrite(led3, HIGH) : digitalWrite(led3, LOW);
+  ((c>>3) & 0b1) == 1 ? digitalWrite(led2, HIGH) : digitalWrite(led2, LOW);
+  ((c>>4) & 0b1) == 1 ? digitalWrite(led1, HIGH) : digitalWrite(led1, LOW);
+  ((c>>5) & 0b1) == 1 ? digitalWrite(led0, HIGH) : digitalWrite(led0, LOW);
 }
