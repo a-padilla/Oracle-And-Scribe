@@ -1,6 +1,8 @@
 #include "scribe.h"
 
-/* ---------- BLUETOOTH ---------- */
+
+/* =========== BT FUNCTIONS =========== */
+
 void bt_setup(BluetoothSerial& SerialBT){
     Serial.begin(115200);
     SerialBT.begin("Scribe"); //Bluetooth device name
@@ -58,84 +60,8 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
     return false;
 }
 
-/* ---------- MISC FUNCTIONS ---------- */
-bool is_lower(char c){
-  if(c>=97 && c<=122) return true;
-  return false;
-}
 
-char to_upper(char c){
-  return (char)(c-32);
-}
-
-string trim(string s){
-  string holder="";
-  for(char c: s){
-    if(c != '\n' && c != '\r'){
-      holder+= c;
-    }
-  }
-  return holder;
-}
-
-void print_info(int page_ind, int burst_ind, int book_size, int page_size, string curr_page, string curr_burst){
-  int highest = curr_page.length()/BURST_LEN;
-  if(curr_page.length()%BURST_LEN!=0){
-    highest++;
-  }
-  
-  string front(curr_page.substr(0,BURST_LEN*burst_ind));
-  string back="";
-  if(!last_burst(curr_page, burst_ind)){
-    back =curr_page.substr(BURST_LEN*(burst_ind+1), curr_page.length()-1);
-  }
-  string info("LOCATION:\nPage: "+std::to_string(page_ind+1)+" / "+std::to_string(book_size)+"\n"+
-    "Burst: "+std::to_string(burst_ind+1)+" / "+std::to_string(highest)+"\n"+
-    "CURRENT PLACE: "+front+" '"+curr_burst+"' "+back+"\n\n");
-  Serial.println(info.c_str());
-}
-
-string burst_from_page(string current_page, int burst_index){
-  if(burst_index<current_page.length()/BURST_LEN){
-    return current_page.substr(burst_index*BURST_LEN, BURST_LEN);  
-  }else{
-    string temp = current_page.substr(burst_index*BURST_LEN);
-    for(unsigned i=temp.length(); i<BURST_LEN; i++){
-      temp += " ";
-    }
-    return temp;
-  }
-}
-
-bool last_burst(string curr_page, int burst_ind){
-  int highest = curr_page.length()/BURST_LEN;
-  if(curr_page.length()%BURST_LEN==0){
-    highest--;
-  }
-
-  if(burst_ind==highest) return true;
-  else return false;
-}
-
-string char_to_braille(char chr){
-  string _ba="";
-  uint8_t byte = decode(chr);
-  _ba.append(to_string((int)((byte & BIT5) >> 5)));
-  _ba.append(to_string((int)((byte & BIT4) >> 4)));
-  _ba.append(to_string((int)((byte & BIT3) >> 3)));
-  _ba.append(to_string((int)((byte & BIT2) >> 2)));
-  _ba.append(to_string((int)((byte & BIT1) >> 1)));
-  _ba.append(to_string((int)(byte & BIT0)));
-  return _ba;
-}
-
-string burst_to_braille(string burst){
-  string _ba="";
-  for(char ch : burst){
-    _ba.append(char_to_braille(ch));
-  }
-  return _ba;
-}
+/* ========== CORE FUNCTIONS ========== */
 
 uint8_t decode(char c){
   char letter=c;
@@ -209,4 +135,95 @@ uint8_t decode(char c){
     case '_': return 0b000111;
     default: return 0b000000;
   }
+}
+
+string burst_from_page(string current_page, int burst_index){
+  if(burst_index<current_page.length()/BURST_LEN){
+    return current_page.substr(burst_index*BURST_LEN, BURST_LEN);  
+  }else{
+    string temp = current_page.substr(burst_index*BURST_LEN);
+    for(unsigned i=temp.length(); i<BURST_LEN; i++){
+      temp += " ";
+    }
+    return temp;
+  }
+}
+
+string burst_to_braille(string burst){
+  string _ba="";
+  for(char ch : burst){
+    _ba.append(char_to_braille(ch));
+  }
+  return _ba;
+}
+
+bool last_burst(string curr_page, int burst_ind){
+  int highest = curr_page.length()/BURST_LEN;
+  if(curr_page.length()%BURST_LEN==0){
+    highest--;
+  }
+
+  if(burst_ind==highest) return true;
+  else return false;
+}
+
+
+/* ========= HELPER FUNCTIONS ========= */
+
+string change_page_format(vector<string> old_page){
+  string _page;
+  for(unsigned i=0; i<old_page.size(); i++){
+    _page.append(old_page[i]);
+    if(i!=old_page.size()-1)
+      _page.append(" ");
+  }
+  return _page;
+}
+
+string char_to_braille(char chr){
+  string _ba="";
+  uint8_t byte = decode(chr);
+  _ba.append(to_string((int)((byte & BIT5) >> 5)));
+  _ba.append(to_string((int)((byte & BIT4) >> 4)));
+  _ba.append(to_string((int)((byte & BIT3) >> 3)));
+  _ba.append(to_string((int)((byte & BIT2) >> 2)));
+  _ba.append(to_string((int)((byte & BIT1) >> 1)));
+  _ba.append(to_string((int)(byte & BIT0)));
+  return _ba;
+}
+
+void print_info(int page_ind, int burst_ind, int book_size, string curr_page, string curr_burst){
+  int highest = curr_page.length()/BURST_LEN;
+  if(curr_page.length()%BURST_LEN!=0){
+    highest++;
+  }
+  
+  string front(curr_page.substr(0,BURST_LEN*burst_ind));
+  string back="";
+  if(!last_burst(curr_page, burst_ind)){
+    back =curr_page.substr(BURST_LEN*(burst_ind+1), curr_page.length()-1);
+  }
+  string info("LOCATION:\nPage: "+std::to_string(page_ind+1)+" / "+std::to_string(book_size)+"\n"+
+    "Burst: "+std::to_string(burst_ind+1)+" / "+std::to_string(highest)+"\n"+
+    "CURRENT PLACE: "+front+" '"+curr_burst+"' "+back+"\n\n");
+  Serial.println(info.c_str());
+}
+
+char to_upper(char c){
+  return (char)(c-32);
+}
+
+bool is_lower(char c){
+  if(c>=97 && c<=122) return true;
+  return false;
+}
+
+string trim(string s){
+  string holder="";
+  for(char c: s){
+    if(c != '\n' && c != '\r'){
+      holder+= c;
+    }
+  }
+  return holder;
 }
