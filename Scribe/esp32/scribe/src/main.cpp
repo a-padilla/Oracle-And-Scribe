@@ -26,10 +26,10 @@ BluetoothSerial SerialBT;
  * @param button_pin Pin of ESP32 to which the button is connected.
  * @param lbt Last debounce time of button.
  * @param button State of the button (HIGH/LOW).
- * @param cl Tells whether the button is for a character, line, or page.
+ * @param cl Tells whether the button is for a burst or page.
  * @param np Tells whether the butto is for the next or previous.
  */
-void poll(const int button_pin, long &lbt, int &button, char cl, char np);
+void poll(const int button_pin, long &lbt, int &button, char bp, char np);
 
 /**
  * @brief Update the char and burst index and get the next burst in a page.
@@ -81,16 +81,9 @@ void set_led(uint8_t c);
  */
 void setup() {
   bt_setup(SerialBT);
-  page.push_back("Bradley");
-  page.push_back("Torie");
-  page.push_back("Austin");
-  book.push_back(change_page_format(page));
 
-  page.clear();
-  page.push_back("Hello");
-  page.push_back("World");
-  book.push_back(change_page_format(page));
-
+  book.push_back("Bradley Torie Austin");
+  book.push_back("Hello World");
   curr_page = book[page_ind];
   curr_burst = burst_from_page(curr_page, burst_ind);
   print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
@@ -131,12 +124,12 @@ void loop() {
 
 /* ========== FUNCTION IMPLEMENTATIONS ========== */
 
-void poll(const int button_pin, long &lbt, int &button, char cl, char np){
+void poll(const int button_pin, long &lbt, int &button, char bp, char np){
     button=digitalRead(button_pin);
     if(((long)millis()-lbt)>debounce_delay){
       // if button pressed
       if(button==HIGH){
-        if(cl=='b'){
+        if(bp=='b'){
           if(np=='n'){
             curr_burst=next_burst();
             print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
@@ -144,7 +137,7 @@ void poll(const int button_pin, long &lbt, int &button, char cl, char np){
             curr_burst=prev_burst();
             print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
           }
-        }else if(cl=='p'){
+        }else if(bp=='p'){
           if(np=='n'){
             curr_page=next_page();
             curr_burst = burst_from_page(curr_page, burst_ind);
