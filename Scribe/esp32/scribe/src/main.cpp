@@ -76,7 +76,7 @@ void set_led(uint8_t c);
 /* ========== MAIN FUNCTIONS ========== */
 
 /**
- * @brief Initialize the ESP32: Hard-code initial book values, print initial line info, and set pin modes.
+ * @brief Initialize the ESP32: Hard-code initial book values, print initial location info, and set pin modes.
  * 
  */
 void setup() {
@@ -213,14 +213,14 @@ void get_page(){
 
 void set_led(uint8_t c){
   // conditions for beginning and end of page
-  page_ind==book.size()-1 ? digitalWrite(last_page_pin, HIGH) : digitalWrite(last_page_pin, LOW);
-  last_burst(curr_page, burst_ind) ? digitalWrite(last_burst_pin, HIGH) : digitalWrite(last_burst_pin, LOW);
+  digitalWrite(last_page_pin, (page_ind==book.size()-1) ? HIGH : LOW);
+  digitalWrite(last_burst_pin, last_burst(curr_page, burst_ind) ? HIGH : LOW);
 
   // conditions for characters
-  (c & 0b1) == 1 ? digitalWrite(led5, HIGH) : digitalWrite(led5, LOW);
-  ((c>>1) & 0b1) == 1 ? digitalWrite(led4, HIGH) : digitalWrite(led4, LOW);
-  ((c>>2) & 0b1) == 1 ? digitalWrite(led3, HIGH) : digitalWrite(led3, LOW);
-  ((c>>3) & 0b1) == 1 ? digitalWrite(led2, HIGH) : digitalWrite(led2, LOW);
-  ((c>>4) & 0b1) == 1 ? digitalWrite(led1, HIGH) : digitalWrite(led1, LOW);
-  ((c>>5) & 0b1) == 1 ? digitalWrite(led0, HIGH) : digitalWrite(led0, LOW);
+  digitalWrite(led5, (c & 0b1) == 1 ? HIGH : LOW);
+  digitalWrite(led4, ((c>>1) & 0b1) == 1 ? HIGH : LOW);
+  digitalWrite(led3, ((c>>2) & 0b1) == 1 ? HIGH : LOW);
+  digitalWrite(led2, ((c>>3) & 0b1) == 1 ? HIGH : LOW);
+  digitalWrite(led1, ((c>>4) & 0b1) == 1 ? HIGH : LOW);
+  digitalWrite(led0, ((c>>5) & 0b1) == 1 ? HIGH : LOW);
 }
