@@ -213,7 +213,7 @@ void get_page(){
 
 void set_led(uint8_t c){
   // conditions for beginning and end of page
-  page_ind==book.size() ? digitalWrite(last_page_pin, HIGH) : digitalWrite(last_page_pin, LOW);
+  page_ind==book.size()-1 ? digitalWrite(last_page_pin, HIGH) : digitalWrite(last_page_pin, LOW);
   last_burst(curr_page, burst_ind) ? digitalWrite(last_burst_pin, HIGH) : digitalWrite(last_burst_pin, LOW);
 
   // conditions for characters
