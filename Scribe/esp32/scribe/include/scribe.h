@@ -7,6 +7,7 @@ using namespace std;
 
 #define MAX_PAGES 3 // most amount of pages allowed in a book
 #define BURST_LEN 5 // number of characters in a burst
+#define DEBOUNCE_DELAY 250 // debounce time
 
 // BLUETOOTH CHECK
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -43,12 +44,106 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
 /* ========== CORE FUNCTIONS ========== */
 
 /**
+ * @brief Checks if a button was pressed. Different functionality based on which button is pressed.
+ * 
+ * @param button_pin Pin of ESP32 to which the button is connected.
+ * @param lbt Last debounce time of button.
+ * @param button State of the button (HIGH/LOW).
+ * @param cl Tells whether the button is for a burst or page.
+ * @param np Tells whether the button is for the next or previous.
+ * @param SerialBT Serial BlueTooth object.
+ * @param page Holder for new page.
+ * @param book Entire book.
+ * @param curr_page Current page.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ */
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+
+/**
+ * @brief Update the char and burst index and get the next burst in a page.
+ * 
+ * @param curr_page Current page.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ * @return string Next burst.
+ */
+string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+
+/**
+ * @brief Update the char and burst index and get the prev burst in a page.
+ * 
+ * @param curr_page Current page.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ * @return string Previous burst.
+ */
+string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+
+/**
+ * @brief Updates the page index and returns the next page. If on the last page, then calls get_page.
+ * 
+ * @param book Entire book.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ * @param SerialBT Serial BlueTooth object.
+ * @param page Holder for new page.
+ * @return string Next page.
+ */
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& page);
+
+/**
+ * @brief Updates the page index and returns the previous page.
+ * 
+ * @param book Entire book.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ * @return string Previous page.
+ */
+string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+
+/**
+ * @brief Calls bt_loop. If a new page is loaded, put the new page in the book.
+ * 
+ * @param SerialBT Serial BlueTooth object.
+ * @param page Holder to get new page.
+ * @param book Entire book.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ */
+void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+
+/**
  * @brief Decodes the Braille ASCII of a character.
  * 
  * @param c Any character.
  * @return uint8_t Braille ASCII version of passed character.
  */
 uint8_t decode(char c);
+
+/**
+ * @brief Set the LEDs with the current character.
+ * 
+ * @param c Current character.
+ * @param book Entire book.
+ * @param curr_burst Current burst.
+ * @param page_ind Page index.
+ * @param burst_ind Burst index.
+ * @param char_ind Character index.
+ */
+void set_led(uint8_t c, vector<string>& book, string& curr_page, int& page_ind, int& burst_ind, int& char_ind);
 
 /**
  * @brief Return burst given the current page and burst index.
