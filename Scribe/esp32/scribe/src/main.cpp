@@ -60,7 +60,5 @@ void loop() {
   poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
 
   curr_burst = burst_from_page(curr_page, burst_ind);
-  if(curr_burst!=""){
-    write_burst(curr_burst);
-  }
+  write_burst(burst_to_braille(curr_burst));
 }
