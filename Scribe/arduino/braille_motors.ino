@@ -3,11 +3,9 @@
 #include <Adafruit_PWMServoDriver.h>
 #include <SPI.h>
 #define BURST_LEN 5
-typedef uint8_t byte
 volatile bool received;
 volatile uint8_t receivedData;
 uint8_t* data = new int[BURST_LEN];
-int currentIndex = 0;
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 int servoMin = 204;   // 0 degrees
 int servoMax = 250;   // ~3.22 degrees
@@ -20,6 +18,24 @@ void spi_init() {
   SPCR |= _BV(SPE); //Configures the Arduino as a slave
   received = false; //Initializes recieved flag as false
   SPI.attachInterrupt(); //Enables interrupt
+}
+
+uint8_t read_byte() {
+
+}
+
+uint8_t read_burst(uint8_t* data_arr) {
+  int currentIndex = 0;
+  
+  //Main loop polls the ISR flag
+  while(currentIndex != BURST_LEN-1){
+    if(received) {
+      //Updates flag and prints the recieved data
+      received = false;
+      data_arr[currentIndex] = receivedData;
+      currentIndex++;
+    }
+  }
 }
 
 //Interrupt Service Routine for when SPI data is recieved
@@ -36,7 +52,6 @@ void setup() {
   pwm1.begin(); //start board(s)
   pwm1.setPWMFreq(servoFrequency); // set the servo operating freq
 
-
   // set pins 2-7 as inputs
   for(int i=2; i<=7; i++){
     pinMode(i, INPUT);
@@ -44,16 +59,7 @@ void setup() {
 }
 
 void loop() {
-  //Main loop polls the ISR flag
-  while(currentIndex != BURST_LEN-1){
-    if(received) {
-      //Updates flag and prints the recieved data
-      received = false;
-      data[currentIndex] = receivedData;
-      currentIndex++;
-    }
-  }
-  currentIndex = 0;
+  read_burst(data);
   
   // Read the input state of each digital pin and set the corresponding servo position
   for(int i=0; i<=5; i++){
