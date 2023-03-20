@@ -20,11 +20,11 @@ void spi_init() {
   SPI.attachInterrupt(); //Enables interrupt
 }
 
-uint8_t read_burst(uint8_t* data_arr) {
+void read_burst(uint8_t* data_arr) {
   int currentIndex = 0;
   
   //Main loop polls the ISR flag
-  while(currentIndex != BURST_LEN-1){
+  while(currentIndex != BURST_LEN){
     if(received) {
       //Updates flag and prints the recieved data
       received = false;

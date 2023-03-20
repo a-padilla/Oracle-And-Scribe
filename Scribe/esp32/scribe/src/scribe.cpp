@@ -318,8 +318,6 @@ static void write_byte(uint8_t data) {
 
 static void write_burst(string burst_ascii) {
   for(int i = 0; i < burst_ascii.length() ; i++) {
-
-    //NEW SPI TRANSMIT CODE
     write_byte(burst_ascii[i]);
   }
 }
