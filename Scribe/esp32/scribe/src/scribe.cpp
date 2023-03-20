@@ -315,3 +315,13 @@ static void write_byte(uint8_t data) {
     ESP_ERROR_CHECK(spi_device_polling_transmit(spi2, &t));
     vTaskDelay(1);
 }
+
+static void write_burst(string current_burst) {
+  for(int i = 0; i < BURST_LEN; i++) {
+    setter = decode(current_burst[i]);
+    //set_led(setter, book, curr_page, page_ind, burst_ind, char_ind);
+
+    //NEW SPI TRANSMIT CODE
+    write_byte(setter);
+  }
+}

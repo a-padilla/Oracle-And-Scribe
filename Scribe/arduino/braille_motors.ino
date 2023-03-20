@@ -2,11 +2,11 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <SPI.h>
-#define CHARACTER_WIDTH 5
+#define BURST_LEN 5
 typedef uint8_t byte
 volatile bool received;
 volatile uint8_t receivedData;
-uint8_t* data = new int[CHARACTER_WIDTH];
+uint8_t* data = new int[BURST_LEN];
 int currentIndex = 0;
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 int servoMin = 204;   // 0 degrees
@@ -45,7 +45,7 @@ void setup() {
 
 void loop() {
   //Main loop polls the ISR flag
-  while(currentIndex != CHARACTER_WIDTH-1){
+  while(currentIndex != BURST_LEN-1){
     if(received) {
       //Updates flag and prints the recieved data
       received = false;

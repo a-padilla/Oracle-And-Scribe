@@ -3,7 +3,21 @@
 #include "BluetoothSerial.h"
 #include <string>
 #include <vector>
+#include <stdio.h>
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/spi_master.h"
+#define CLK_PIN     33
+#define MOSI_PIN    32
+#define CS_PIN      25
+#define DECODE_MODE_REG     0x09
+#define INTENSITY_REG       0x0A
+#define SCAN_LIMIT_REG      0x0B
+#define SHUTDOWN_REG        0x0C
+#define DISPLAY_TEST_REG    0x0F
 using namespace std;
+spi_device_handle_t spi2;
 
 #define MAX_PAGES 3 // most amount of pages allowed in a book
 #define BURST_LEN 5 // number of characters in a burst
@@ -226,3 +240,23 @@ bool is_lower(char c);
  * @return string Passed string with no newline or line feed characters.
  */
 string trim(string s);
+
+/* ========= SPI FUNCTIONS ========= */
+/**
+ * @brief Initializes the SPI module.
+ */
+static void spi_init();
+
+/**
+ * @brief Transmits one byte of data via SPI.
+ * 
+ * @param data Any byte of data.
+ */
+static void write_byte(uint8_t data);
+
+/**
+ * @brief Transmits each character in the burst via SPI.
+ * 
+ * @param current_burst Any string BURST_LEN long.
+ */
+static void write_burst(string current_burst);
