@@ -12,6 +12,7 @@ using std::vector;
 #define CLK_PIN     33
 #define MOSI_PIN    32
 #define CS_PIN      25
+#define CHARACTER_WIDTH     5
 #define DECODE_MODE_REG     0x09
 #define INTENSITY_REG       0x0A
 #define SCAN_LIMIT_REG      0x0B
@@ -76,11 +77,13 @@ void loop() {
 
   curr_burst = burst_from_page(curr_page, burst_ind);
   if(curr_burst!=""){
-    setter = decode(curr_burst[0]);
-    set_led(setter, book, curr_page, page_ind, burst_ind, char_ind);
+    for(int i = 0; i < CHARACTER_WIDTH; i++) {
+      setter = decode(curr_burst[i]);
+      //set_led(setter, book, curr_page, page_ind, burst_ind, char_ind);
 
-    //NEW SPI TRANSMIT CODE
-    write_byte(setter);
-    vTaskDelay(1);
+      //NEW SPI TRANSMIT CODE
+      write_byte(setter);
+      vTaskDelay(1);
+    }
   }
 }
