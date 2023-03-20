@@ -5,7 +5,7 @@
 #define BURST_LEN 5
 volatile bool received;
 volatile uint8_t receivedData;
-uint8_t* data = new int[BURST_LEN];
+uint8_t* data = new uint8_t[BURST_LEN];
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 int servoMin = 204;   // 0 degrees
 int servoMax = 250;   // ~3.22 degrees
@@ -18,10 +18,6 @@ void spi_init() {
   SPCR |= _BV(SPE); //Configures the Arduino as a slave
   received = false; //Initializes recieved flag as false
   SPI.attachInterrupt(); //Enables interrupt
-}
-
-uint8_t read_byte() {
-
 }
 
 uint8_t read_burst(uint8_t* data_arr) {
