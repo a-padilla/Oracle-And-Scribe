@@ -1,9 +1,4 @@
-#include <Arduino.h>
-#include <vector>
-#include <string>
 #include "scribe.h"
-using std::string;
-using std::vector;
 
 // initializations for buttons
 int prev_burst_button=LOW, next_burst_button=LOW, prev_page_button=LOW, next_page_button=LOW;
