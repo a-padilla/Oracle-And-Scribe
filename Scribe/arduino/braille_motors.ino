@@ -56,7 +56,7 @@ void setup() {
 
 void loop() {
   read_burst(data);
-  
+
   // Read the input state of each digital pin and set the corresponding servo position
   for(int i=0; i<=5; i++){
     // Read the input state of the specified digital pin
@@ -67,13 +67,13 @@ void loop() {
       if(i>2){
         pwm1.setPWM(i, 0, servoMax);
       }else{
-        pwm1.setPWM(i, 0, servoMin);  
+        pwm1.setPWM(i, 0, servoMin);
       }
     } else {
       if(i>2){
         pwm1.setPWM(i, 0, servoMin);
       }else{
-        pwm1.setPWM(i, 0, servoMax);  
+        pwm1.setPWM(i, 0, servoMax);
       }
     }
   }
