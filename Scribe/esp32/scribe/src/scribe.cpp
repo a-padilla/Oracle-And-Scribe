@@ -128,7 +128,7 @@ void send_oracle(BluetoothSerial& SerialBT, string to_send){
 
 /* ========== CORE FUNCTIONS ========== */
 
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, vector<string>& oracle_buf, vector<string>& alice_buf, bool& oracle, bool& alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
     button=digitalRead(button_pin);
     if(((long)millis()-lbt)>DEBOUNCE_DELAY){
       // if button pressed
@@ -143,13 +143,21 @@ void poll(const int button_pin, long &lbt, int &button, char bp, char np, Blueto
           }
         }else if(bp=='p'){
           if(np=='n'){
-            curr_page=next_page(book, curr_burst, page_ind, burst_ind, char_ind, SerialBT, oracle_buf, alice_buf, oracle, alice);
+            curr_page=next_page(book, curr_burst, page_ind, burst_ind, char_ind, oracle_buf, alice_buf, oracle, alice);
             curr_burst = burst_from_page(curr_page, burst_ind);
             print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
           }else{
             curr_page=prev_page(book, curr_burst, page_ind, burst_ind, char_ind);
             curr_burst = burst_from_page(curr_page, burst_ind);
             print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
+          }
+        }else if(bp=='s'){
+          if(oracle){
+            oracle = false;
+            alice = true;
+          }else{
+            oracle = true;
+            alice = false;
           }
         }
         lbt=millis();
@@ -178,7 +186,7 @@ string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
   }
 }
 
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice){
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice){
   if(page_ind==book.size()-1){
     if((alice && !alice_buf.empty()) || (oracle && !oracle_buf.empty())){
       if(book.size()==MAX_PAGES)
@@ -194,9 +202,6 @@ string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& b
       burst_ind=0;
       page_ind=book.size()-1;
     }
-    
-    
-    
     return book[page_ind];
   }else{
     page_ind++;

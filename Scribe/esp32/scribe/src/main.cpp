@@ -1,9 +1,10 @@
 #include "scribe.h"
 
 // initializations for buttons
-int prev_burst_button=LOW, next_burst_button=LOW, prev_page_button=LOW, next_page_button=LOW;
+int prev_burst_button=LOW, next_burst_button=LOW, prev_page_button=LOW, next_page_button=LOW, bt_switch_button=LOW;
 long prev_burst_last_debounce_time=0, next_burst_last_debounce_time=0;
 long prev_page_last_debounce_time=0, next_page_last_debounce_time=0;
+long bt_switch_last_debounce_time=0;
 
 
 vector<string> book, page, alice_buf, oracle_buf;
@@ -41,6 +42,7 @@ void setup() {
   pinMode(next_burst_button_pin, INPUT);
   pinMode(prev_page_button_pin, INPUT);
   pinMode(next_page_button_pin, INPUT);
+  pinMode(bt_switch_button_pin, INPUT);
 }
 
 /**
@@ -48,10 +50,12 @@ void setup() {
  * 
  */
 void loop() {
-  poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p', oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n', oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p', oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(bt_switch_button_pin, bt_switch_last_debounce_time, bt_switch_button, 's', 's', oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  bt_poll(SerialBT, alice_buf, oracle_buf);
 
   curr_burst = burst_from_page(curr_page, burst_ind);
   if(curr_burst!=""){
