@@ -12,7 +12,7 @@ import cv2
 from bluetooth import *
 sys.path.append('./camera')
 from RpiCamera import Camera
-
+ORACLE_PREFIX = "for_the_oracle"
 
 class Oracle(Camera):
 	"""Encapsulates all functionality to take an image, process it, and send it to the Scribe
@@ -136,19 +136,19 @@ class Oracle(Camera):
 			return False
 			
 		#send number of lines
-		self.connection.sock.send(str(len(lines)))
+		self.connection.sock.send(ORACLE_PREFIX + str(len(lines)))
 		
 		# wait for response
 		response = self.connection.sock.recv(1024)
 		print(response)
-		if response == b'1':
+		if response == ORACLE_PREFIX + b'1':
 			for i in range(len(lines)):
 				# when acknowledged, send the line
-				self.connection.sock.send(lines[i])
+				self.connection.sock.send(ORACLE_PREFIX + lines[i])
 				# wait for response again
 				response = self.connection.sock.recv(1024)
 				print(response)
-				if response != b'2':
+				if response != ORACLE_PREFIX + b'2':
 					break
 		time.sleep(0.1)
 		print(self.connection.sock.recv(1024))

@@ -1,7 +1,7 @@
 # Oracle class - Contains all the functionality all in one class
 import time
 from bluetooth import *
-
+ALICE_PREFIX = "for_the_alicex"
 class Alice():
 	"""Encapsulates all functionality to take an image, process it, and send it to the Scribe
 
@@ -113,19 +113,19 @@ class Alice():
 			return False
 			
 		#send number of lines
-		self.connection.sock.send(str(len(lines)))
+		self.connection.sock.send(ALICE_PREFIX + str(len(lines)))
 		
 		# wait for response
 		response = self.connection.sock.recv(1024)
 		print(response)
-		if response == b'1':
+		if response == ALICE_PREFIX + b'1':
 			for i in range(len(lines)):
 				# when acknowledged, send the line
-				self.connection.sock.send(lines[i])
+				self.connection.sock.send(ALICE_PREFIX + lines[i])
 				# wait for response again
 				response = self.connection.sock.recv(1024)
 				print(response)
-				if response != b'2':
+				if response != ALICE_PREFIX + b'2':
 					break
 		time.sleep(0.1)
 		
