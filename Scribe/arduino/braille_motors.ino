@@ -60,7 +60,7 @@ void loop() {
   // Read the input state of each digital pin and set the corresponding servo position
   for(int i=0; i<=5; i++){
     // Read the input state of the specified digital pin
-    bool inputState = digitalRead((i+2));
+    bool inputState = data[i];
 
     // Set the servo position based on the input state
     if (inputState) {
