@@ -9,61 +9,126 @@ void bt_setup(BluetoothSerial& SerialBT){
     Serial.println("The device started, now you can pair it with bluetooth!\n");
 }
 
-bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
-    
-    bool is_digit=false;
-    string num_lines="",holder="";
-    if (SerialBT.available()) {
-      while(SerialBT.available()){
-        num_lines+=(char)SerialBT.read();
-      }
-      num_lines=trim(num_lines);
-      is_digit=true;
-      for(char c: num_lines){
-        if(!isdigit(c)){
-          is_digit=false;
-          break;
-        }
-      }
-      if(is_digit && stoi(num_lines)!=0){
-        // Serial.write('1');
-        SerialBT.write('1');
-        page.clear();
-        int t=stoi(num_lines);
-        while(t){
-          delay(50);
-          if(SerialBT.available()){
-            holder="";
-            while(SerialBT.available()){
-              holder+=(char)SerialBT.read();
+void bt_poll(BluetoothSerial& SerialBT, vector<string>& alice_buf, vector<string>& oracle_buf){
+  bool expecting_alice = false, expecting_oracle = false, is_digit;
+  int alice_lines=0, oracle_lines=0, max_alice_lines=0, max_oracle_lines=0;
+  string holder, num_lines;
+  vector<pair<char, string>> splits;
+
+  while(SerialBT.available()){
+    while(SerialBT.available()){
+        holder+=(char)SerialBT.read();
+    }
+    splits = bt_split_data(holder);
+
+    for(pair<char,string> p : splits){
+      if(p.first=='a'){
+        if(!expecting_alice){
+          num_lines=trim(p.second);
+          is_digit=true;
+          for(char c: num_lines){
+            if(!isdigit(c)){
+              is_digit=false;
+              break;
             }
-            page.push_back(trim(holder));
-            // Serial.write('2');
-            SerialBT.write('2');
-            t--;
+          }
+          if(is_digit && stoi(num_lines)!=0){
+            send_alice(SerialBT, "1");
+            alice_buf.clear();
+            alice_lines=stoi(num_lines);
+            max_alice_lines=alice_lines;
+            expecting_alice = true;
+          }else if(stoi(num_lines)==0){
+            send_alice(SerialBT, "1");
+            send_alice(SerialBT, num_lines);
+          }
+        }else{
+          alice_buf.push_back(trim(p.second));
+          send_alice(SerialBT, "2");
+          alice_lines--;
+          if(alice_lines==0){
+            send_alice(SerialBT, to_string(max_alice_lines));
+            expecting_alice = false;
           }
         }
-        for(char c: num_lines){
-          // Serial.write(c);
-          SerialBT.write(c);
-        }
-        return true;
-      }else if(stoi(num_lines)==0){
-        SerialBT.write('1');
-        for(char c: num_lines){
-          // Serial.write(c);
-          SerialBT.write(c);
+      }else if(p.first=='o'){
+        if(!expecting_oracle){
+          num_lines=trim(p.second);
+          is_digit=true;
+          for(char c: num_lines){
+            if(!isdigit(c)){
+              is_digit=false;
+              break;
+            }
+          }
+          if(is_digit && stoi(num_lines)!=0){
+            send_oracle(SerialBT, "1");
+            oracle_buf.clear();
+            oracle_lines=stoi(num_lines);
+            max_oracle_lines=oracle_lines;
+            expecting_oracle = true;
+          }else if(stoi(num_lines)==0){
+            send_oracle(SerialBT, "1");
+            send_oracle(SerialBT, num_lines);
+          }
+        }else{
+          oracle_buf.push_back(trim(p.second));
+          send_oracle(SerialBT, "2");
+          oracle_lines--;
+          if(oracle_lines==0){
+            send_oracle(SerialBT, to_string(max_oracle_lines));
+            expecting_oracle = false;
+          }
         }
       }
     }
+  }
+}
+
+vector<pair<char, string>> bt_split_data(string input){
+  vector<pair<char, string>> split;
+  vector<pair<char, int>> locs = find_prefix_locs(input);
+  for(pair<char,int> p : locs){
+    split.push_back(make_pair(p.first, input.substr(p.second+PREFIX_LEN)));
+    input = input.substr(0, p.second);
+  }
+  return split;
+}
+
+vector<pair<char, int>> find_prefix_locs(string s){
+  vector<pair<char,int>> locs;
+  string holder;
+  for(unsigned i=0; i<s.length()-1-PREFIX_LEN; i++){
+    holder = s.substr(i, PREFIX_LEN);
+    if(holder==ALICE_PREFIX)
+      locs.push_back(make_pair('a', i));
+    else if(holder==ORACLE_PREFIX)
+      locs.push_back(make_pair('o', i));
+  }
+  reverse(locs.begin(), locs.end());
+  return locs;
+}
+
+void send_alice(BluetoothSerial& SerialBT, string to_send){
+  to_send = (string)ALICE_PREFIX+to_send;
+  for(char c: to_send){
+    SerialBT.write(c);
     delay(50);
-    return false;
+  }
+}
+
+void send_oracle(BluetoothSerial& SerialBT, string to_send){
+  to_send = (string)ORACLE_PREFIX+to_send;
+  for(char c: to_send){
+    SerialBT.write(c);
+    delay(50);
+  }
 }
 
 
 /* ========== CORE FUNCTIONS ========== */
 
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
     button=digitalRead(button_pin);
     if(((long)millis()-lbt)>DEBOUNCE_DELAY){
       // if button pressed
@@ -78,7 +143,7 @@ void poll(const int button_pin, long &lbt, int &button, char bp, char np, Blueto
           }
         }else if(bp=='p'){
           if(np=='n'){
-            curr_page=next_page(book, curr_burst, page_ind, burst_ind, char_ind, SerialBT, page);
+            curr_page=next_page(book, curr_burst, page_ind, burst_ind, char_ind, SerialBT, oracle_buf, alice_buf, oracle, alice);
             curr_burst = burst_from_page(curr_page, burst_ind);
             print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
           }else{
@@ -113,9 +178,25 @@ string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
   }
 }
 
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& page){
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice){
   if(page_ind==book.size()-1){
-    get_page(SerialBT, page, book, curr_burst, page_ind, burst_ind, char_ind);
+    if((alice && !alice_buf.empty()) || (oracle && !oracle_buf.empty())){
+      if(book.size()==MAX_PAGES)
+        book.erase(book.begin());
+      if(oracle){
+        book.push_back(change_page_format(oracle_buf));
+        oracle_buf.clear();
+      }else if(alice){
+        book.push_back(change_page_format(alice_buf));
+        alice_buf.clear();
+      }
+      char_ind=0;
+      burst_ind=0;
+      page_ind=book.size()-1;
+    }
+    
+    
+    
     return book[page_ind];
   }else{
     page_ind++;
@@ -136,17 +217,6 @@ string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& b
     char_ind=0;
     burst_ind=0;
     return book[page_ind];
-  }
-}
-
-void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
-  if(bt_loop(SerialBT, page)){ // new page?
-    if(book.size()==MAX_PAGES)
-      book.erase(book.begin());
-    book.push_back(change_page_format(page));
-    char_ind=0;
-    burst_ind=0;
-    page_ind=book.size()-1;
   }
 }
 

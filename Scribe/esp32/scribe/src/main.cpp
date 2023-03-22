@@ -1,8 +1,3 @@
-#include <Arduino.h>
-#include <vector>
-#include <string>
-using std::string;
-using std::vector;
 #include "scribe.h"
 
 // initializations for buttons
@@ -11,7 +6,8 @@ long prev_burst_last_debounce_time=0, next_burst_last_debounce_time=0;
 long prev_page_last_debounce_time=0, next_page_last_debounce_time=0;
 
 
-vector<string> book, page;
+vector<string> book, page, alice_buf, oracle_buf;
+bool alice=false, oracle=true;
 int char_ind=0, burst_ind=0, page_ind=0;
 uint8_t setter;
 string curr_burst, curr_page;
@@ -52,10 +48,10 @@ void setup() {
  * 
  */
 void loop() {
-  poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
-  poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(prev_burst_button_pin, prev_burst_last_debounce_time, prev_burst_button, 'b', 'p', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(next_burst_button_pin, next_burst_last_debounce_time, next_burst_button, 'b', 'n', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(prev_page_button_pin, prev_page_last_debounce_time, prev_page_button, 'p', 'p', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
+  poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', SerialBT, oracle_buf, alice_buf, oracle, alice, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
 
   curr_burst = burst_from_page(curr_page, burst_ind);
   if(curr_burst!=""){

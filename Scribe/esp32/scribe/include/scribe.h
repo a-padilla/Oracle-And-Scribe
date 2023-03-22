@@ -8,6 +8,9 @@ using namespace std;
 #define MAX_PAGES 3 // most amount of pages allowed in a book
 #define BURST_LEN 5 // number of characters in a burst
 #define DEBOUNCE_DELAY 250 // debounce time
+#define PREFIX_LEN 14
+#define ALICE_PREFIX  "for_the_alicex"
+#define ORACLE_PREFIX "for_the_oracle"
 
 // BLUETOOTH CHECK
 #if !defined(CONFIG_BT_ENABLED) || !defined(CONFIG_BLUEDROID_ENABLED)
@@ -31,14 +34,45 @@ const int led0=12, led1=14, led2=27, led3=26, led4=33, led5=32;
 void bt_setup(BluetoothSerial& SerialBT);
 
 /**
- * @brief Check to see if a page is available to read. If one is, then read it.
+ * @brief See if data was sent to the Scribe. If so, take it in according to the device they were sent from.
  * 
- * @param SerialBT Serial bluetooth object, since we are checking for page from over BT.
- * @param page Object to store the loaded page.
- * @return true The page object contains a new page.
- * @return false The page object does not contain a new page.
+ * @param SerialBT Serial BlueTooth object.
+ * @param alice_buf Buffer page for alice.
+ * @param oracle_buf Buffer page for the oracle.
  */
-bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
+void bt_poll(BluetoothSerial& SerialBT, vector<string>& alice_buf, vector<string>& oracle_buf);
+
+/**
+ * @brief Separate data sent to BT based on the device they were sent from.
+ * 
+ * @param input String of data.
+ * @return vector<pair<char, string>> The data paired with the device that sent them.
+ */
+vector<pair<char, string>> bt_split_data(string input);
+
+/**
+ * @brief Helper function to find the prefix locations to help separate data.
+ * 
+ * @param s String of data.
+ * @return vector<pair<char, int>> The prefix locations paired with their index. 
+ */
+vector<pair<char, int>> find_prefix_locs(string s);
+
+/**
+ * @brief Function to send data to Alice.
+ * 
+ * @param SerialBT Serial BT object.
+ * @param to_send String of data to send.
+ */
+void send_alice(BluetoothSerial& SerialBT, string to_send);
+
+/**
+ * @brief Function to send data to the Oracle.
+ * 
+ * @param SerialBT Serial BT object.
+ * @param to_send String of data to send.
+ */
+void send_oracle(BluetoothSerial& SerialBT, string to_send);
 
 
 /* ========== CORE FUNCTIONS ========== */
@@ -60,7 +94,7 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
  * @param burst_ind Burst index.
  * @param char_ind Character index.
  */
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
 
 /**
  * @brief Update the char and burst index and get the next burst in a page.
@@ -98,7 +132,7 @@ string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
  * @param page Holder for new page.
  * @return string Next page.
  */
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& page);
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice);
 
 /**
  * @brief Updates the page index and returns the previous page.
@@ -111,19 +145,6 @@ string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& b
  * @return string Previous page.
  */
 string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
-
-/**
- * @brief Calls bt_loop. If a new page is loaded, put the new page in the book.
- * 
- * @param SerialBT Serial BlueTooth object.
- * @param page Holder to get new page.
- * @param book Entire book.
- * @param curr_burst Current burst.
- * @param page_ind Page index.
- * @param burst_ind Burst index.
- * @param char_ind Character index.
- */
-void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
 
 /**
  * @brief Decodes the Braille ASCII of a character.
