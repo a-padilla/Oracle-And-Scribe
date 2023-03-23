@@ -2,7 +2,6 @@
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 #include <SPI.h>
-#include <string>
 #define BURST_LEN 5
 volatile bool received;
 volatile uint8_t receivedData;
@@ -46,14 +45,14 @@ ISR (SPI_STC_vect)
   received = true;
 }
 
-void setChar(int characterNumber, string data) {
+void setChar(int characterNumber, int index) {
   for(int i=0; i<=5; i++){
       // Read the input state of the specified digital pin
-      bool inputState = data[i];
+      bool inputState = data[index + i];
       int servoValue = 0;
 
       // Set the servo position based on the input state
-      if (inputState == '1') {
+      if (inputState == ((uint8_t)'1')) {
         if(i>2){
           servoValue = servoMax;
         }else{
@@ -73,6 +72,7 @@ void setChar(int characterNumber, string data) {
       }
       else if(characterNumber == 2){
         pwm1.setPWM(i+6, 0, servoValue);
+        
       }
       else if(characterNumber == 3){
         pwm2.setPWM(i, 0, servoValue);
@@ -113,15 +113,8 @@ void loop() {
 
   //Sets each cell to the respective character
   for(int i = 0; i < BURST_LEN; i++) {
-    string characterData = ""; 
-    
-    //Creates a string of 6 characters corresponding to the current character
-    for(int j = 0; j < 6; j++) {
-      characterData = characterData + (char)data[i*6 + j]
-    }
-
     //Sets the character to display on the servos
-    setChar(i, characterData);
+    setChar(i, i*6);
   }
   // Read the input state of each digital pin and set the corresponding servo position
 }
