@@ -20,6 +20,7 @@ using namespace std;
 // DEFINE PIN NUMBERS
 const int prev_burst_button_pin=2, next_burst_button_pin=15;
 const int prev_page_button_pin=19, next_page_button_pin=18;
+const int bt_switch_button_pin=17;
 const int last_burst_pin=4, last_page_pin=16;
 const int led0=12, led1=14, led2=27, led3=26, led4=33, led5=32;
 
@@ -94,7 +95,7 @@ void send_oracle(BluetoothSerial& SerialBT, string to_send);
  * @param burst_ind Burst index.
  * @param char_ind Character index.
  */
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, vector<string>& oracle_buf, vector<string>& alice_buf, bool& oracle, bool& alice, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
 
 /**
  * @brief Update the char and burst index and get the next burst in a page.
@@ -132,7 +133,7 @@ string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
  * @param page Holder for new page.
  * @return string Next page.
  */
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice);
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, vector<string>& oracle_buf, vector<string>& alice_buf, bool oracle, bool alice);
 
 /**
  * @brief Updates the page index and returns the previous page.
