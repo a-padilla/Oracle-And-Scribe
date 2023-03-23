@@ -320,4 +320,7 @@ static void write_burst(string burst_ascii) {
   for(int i = 0; i < burst_ascii.length() ; i++) {
     write_byte(burst_ascii[i]);
   }
+  
+  //Wait 100ms to give arduino time to process and display the data
+  vTaskDelay(10);
 }

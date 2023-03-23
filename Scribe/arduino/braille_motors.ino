@@ -27,7 +27,7 @@ void read_burst(uint8_t* data_arr) {
   int currentIndex = 0;
   
   //Main loop polls the ISR flag
-  while(currentIndex != BURST_LEN){
+  while(currentIndex != BURST_LEN*6){
     if(received) {
       //Updates flag and prints the recieved data
       received = false;
@@ -48,7 +48,7 @@ ISR (SPI_STC_vect)
 void setChar(int characterNumber, int index) {
   for(int i=0; i<=5; i++){
       // Read the input state of the specified digital pin
-      bool inputState = data[index + i];
+      char inputState = data[index + i];
       int servoValue = 0;
 
       // Set the servo position based on the input state
