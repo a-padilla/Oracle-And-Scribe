@@ -92,20 +92,21 @@ vector<pair<char, string>> bt_split_data(string input){
     split.push_back(make_pair(p.first, input.substr(p.second+PREFIX_LEN)));
     input = input.substr(0, p.second);
   }
+  reverse(split);
   return split;
 }
 
 vector<pair<char, int>> find_prefix_locs(string s){
   vector<pair<char,int>> locs;
   string holder;
-  for(unsigned i=0; i<s.length()-1-PREFIX_LEN; i++){
+  for(unsigned i=0; i<s.length()-PREFIX_LEN + 1; i++){
     holder = s.substr(i, PREFIX_LEN);
     if(holder==ALICE_PREFIX)
       locs.push_back(make_pair('a', i));
     else if(holder==ORACLE_PREFIX)
       locs.push_back(make_pair('o', i));
   }
-  reverse(locs.begin(), locs.end());
+  reverse(locs);
   return locs;
 }
 
@@ -354,4 +355,13 @@ string trim(string s){
     }
   }
   return holder;
+}
+
+template <typename T>
+void reverse(vector<T>& v){
+	for(unsigned i=0; i<v.size()/2; i++){
+		T temp = v[i];
+		v[i] = v[v.size()-i-1];
+		v[v.size()-i-1] = temp;
+	}
 }

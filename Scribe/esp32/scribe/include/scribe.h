@@ -248,3 +248,12 @@ bool is_lower(char c);
  * @return string Passed string with no newline or line feed characters.
  */
 string trim(string s);
+
+/**
+ * @brief Reverse a vector.
+ * 
+ * @tparam T Template variable.
+ * @param v Any vector to be reversed.
+ */
+template <typename T>
+void reverse(vector<T>& v);
