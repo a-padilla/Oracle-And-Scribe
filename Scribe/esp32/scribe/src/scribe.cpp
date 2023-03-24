@@ -16,9 +16,11 @@ void bt_poll(BluetoothSerial& SerialBT, vector<string>& alice_buf, vector<string
   vector<pair<char, string>> splits;
 
   while(SerialBT.available()){
+    delay(10);
     while(SerialBT.available()){
         holder+=(char)SerialBT.read();
     }
+    Serial.println(holder.c_str());
     splits = bt_split_data(holder);
 
     for(pair<char,string> p : splits){
@@ -44,6 +46,7 @@ void bt_poll(BluetoothSerial& SerialBT, vector<string>& alice_buf, vector<string
           }
         }else{
           alice_buf.push_back(trim(p.second));
+          Serial.println(trim(p.second).c_str());
           send_alice(SerialBT, "2");
           alice_lines--;
           if(alice_lines==0){
@@ -73,6 +76,7 @@ void bt_poll(BluetoothSerial& SerialBT, vector<string>& alice_buf, vector<string
           }
         }else{
           oracle_buf.push_back(trim(p.second));
+          Serial.println(trim(p.second).c_str());
           send_oracle(SerialBT, "2");
           oracle_lines--;
           if(oracle_lines==0){
@@ -114,16 +118,16 @@ void send_alice(BluetoothSerial& SerialBT, string to_send){
   to_send = (string)ALICE_PREFIX+to_send;
   for(char c: to_send){
     SerialBT.write(c);
-    delay(50);
   }
+  delay(50);
 }
 
 void send_oracle(BluetoothSerial& SerialBT, string to_send){
   to_send = (string)ORACLE_PREFIX+to_send;
   for(char c: to_send){
     SerialBT.write(c);
-    delay(50);
   }
+  delay(50);
 }
 
 
@@ -156,9 +160,11 @@ void poll(const int button_pin, long &lbt, int &button, char bp, char np, vector
           if(oracle){
             oracle = false;
             alice = true;
+            Serial.println("Alice.");
           }else{
             oracle = true;
             alice = false;
+            Serial.println("Oracle.");
           }
         }
         lbt=millis();
