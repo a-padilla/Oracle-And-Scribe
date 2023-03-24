@@ -8,7 +8,6 @@ volatile uint8_t receivedData;
 uint8_t* data = new uint8_t[BURST_LEN*6];
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 Adafruit_PWMServoDriver pwm2 = Adafruit_PWMServoDriver(0x41); // create an object of board 2
-Adafruit_PWMServoDriver pwm3 = Adafruit_PWMServoDriver(0x42); // create an object of board 3
 int servoMin = 204;   // 0 degrees
 int servoMax = 250;   // ~3.22 degrees
 int servoFrequency = 50; // servo update frequency, analog servos typically run at ~50 Hz
@@ -44,47 +43,32 @@ ISR (SPI_STC_vect)
   received = true;
 }
 
-void setChar(int characterNumber, int index) {
-  for(int i=0; i<=5; i++){
-      // Read the input state of the specified digital pin
-      char inputState = data[index + i];
-      int servoValue = servoMin;
-
-      // Set the servo position based on the input state
-      if (inputState == ((uint8_t)'1')) {
-        if(i>2){
-          servoValue = servoMax;
-        }else{
-          servoValue = servoMin;
-        }
-      } else if(inputState == ((uint8_t)'0')){
-        if(i>2){
-          servoValue = servoMin;
-        }else{
-          servoValue = servoMax;
-        }
+void setBurst() {
+  int servoValue = servoMin;
+  int high = servoMin;
+  int low = servoMax;
+  
+  for(int i=0; i<BURST_LEN*6; i++){
+      //Invert high and low every 3 characters because the servos are reversed in direction
+      if(i%3 == 0) {
+        int temp = high;
+        high = low;
+        low = temp;
       }
 
-      //I know this is ugly and I'm sorry
-      if(characterNumber == 1){
+      //Assign servoValue to the respective high or low angle depending on its value
+      if (data[i] == '1') {
+        servoValue = high;
+      }
+      else {
+        servoValue = low;
+      }
+      
+      //Decide on which pwm to use based on the position in the data array
+      if(i/16 < 1)
         pwm1.setPWM(i, 0, servoValue);
-      }
-      else if(characterNumber == 2){
-        pwm1.setPWM(i+6, 0, servoValue);
-        
-      }
-      else if(characterNumber == 3){
-        pwm2.setPWM(i, 0, servoValue);
-      }
-      else if(characterNumber == 4){
-        pwm2.setPWM(i+6, 0, servoValue);
-      }
-      else if(characterNumber == 5){
-        pwm3.setPWM(i, 0, servoValue);
-      }
-      else if(characterNumber == 6){
-        pwm3.setPWM(i+6, 0, servoValue);
-      }
+      else
+        pwm2.setPWM(i-16, 0, servoValue);
     }
 }
 
@@ -105,10 +89,7 @@ void loop() {
   read_burst(data);
 
   //Sets each cell to the respective character
-  for(int i = 1; i <= BURST_LEN; i++) {
-    //Sets the character to display on the servos
-    setChar(i, i*6);
-  }
+  setBurst();
   // Read the input state of each digital pin and set the corresponding servo position
 }
 
