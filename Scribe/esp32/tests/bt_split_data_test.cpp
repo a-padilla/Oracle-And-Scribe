@@ -18,6 +18,8 @@ int main(int argc, char** argv){
 	test("for_the_alicexHello world!for_the_oracleFrom the Oracle now...for_the_alicex");
 	// from one device
 	test("for_the_oracleBradley");
+  // empty string as only input
+  test("for_the_alicex");
 	return 0;
 }
 
