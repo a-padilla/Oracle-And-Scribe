@@ -17,7 +17,6 @@
 #define SHUTDOWN_REG        0x0C
 #define DISPLAY_TEST_REG    0x0F
 using namespace std;
-spi_device_handle_t spi2;
 
 #define MAX_PAGES 3 // most amount of pages allowed in a book
 #define BURST_LEN 5 // number of characters in a burst
@@ -245,18 +244,18 @@ string trim(string s);
 /**
  * @brief Initializes the SPI module.
  */
-static void spi_init();
+void spi_init(spi_device_handle_t& spi2);
 
 /**
  * @brief Transmits one byte of data via SPI.
  * 
  * @param data Any byte of data.
  */
-static void write_byte(uint8_t data);
+void write_byte(uint8_t data, spi_device_handle_t& spi2);
 
 /**
  * @brief Transmits each character in the burst via SPI.
  * 
  * @param current_burst Any string BURST_LEN long.
  */
-static void write_burst(string current_burst);
+void write_burst(string burst_ascii, spi_device_handle_t& spi2);

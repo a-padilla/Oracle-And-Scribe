@@ -10,6 +10,7 @@ int char_ind=0, burst_ind=0, page_ind=0;
 uint8_t setter;
 string curr_burst, curr_page;
 BluetoothSerial SerialBT;
+spi_device_handle_t spi2;
 
 
 /**
@@ -41,7 +42,7 @@ void setup() {
   pinMode(next_page_button_pin, INPUT);
 
   //WILL OVERRIDE SOME LED OUTPUTS
-  spi_init();
+  spi_init(spi2);
 }
 
 /**
@@ -55,5 +56,5 @@ void loop() {
   poll(next_page_button_pin, next_page_last_debounce_time, next_page_button, 'p', 'n', SerialBT, page, book, curr_page, curr_burst, page_ind, burst_ind, char_ind);
 
   curr_burst = burst_from_page(curr_page, burst_ind);
-  write_burst(burst_to_braille(curr_burst));
+  write_burst(burst_to_braille(curr_burst), spi2);
 }

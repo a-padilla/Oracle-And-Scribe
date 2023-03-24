@@ -282,7 +282,7 @@ string trim(string s){
 }
 
 /* =========== SPI CODE =========== */
-static void spi_init() {
+void spi_init(spi_device_handle_t& spi2) {
     esp_err_t ret;
     spi_bus_config_t buscfg={
         .mosi_io_num = MOSI_PIN,
@@ -306,7 +306,7 @@ static void spi_init() {
     ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &devcfg, &spi2));
 };
 
-static void write_byte(uint8_t data) {
+void write_byte(uint8_t data, spi_device_handle_t& spi2) {
     uint8_t tx_data[1] = { data };
     spi_transaction_t t = {
         .length = 8,
@@ -316,9 +316,9 @@ static void write_byte(uint8_t data) {
     vTaskDelay(1);
 }
 
-static void write_burst(string burst_ascii) {
+void write_burst(string burst_ascii, spi_device_handle_t& spi2) {
   for(int i = 0; i < burst_ascii.length() ; i++) {
-    write_byte(burst_ascii[i]);
+    write_byte(burst_ascii[i], spi2);
   }
   
   //Wait 100ms to give arduino time to process and display the data
