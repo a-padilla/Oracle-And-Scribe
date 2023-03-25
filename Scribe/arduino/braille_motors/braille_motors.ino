@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <Wire.h>
-#include <SPI.h>
 #include <Adafruit_PWMServoDriver.h>
 
 #define BURST_LEN 5
