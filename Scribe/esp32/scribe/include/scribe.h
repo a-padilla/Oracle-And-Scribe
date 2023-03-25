@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "BluetoothSerial.h"
+#include <SPI.h>
 #include <string>
 #include <vector>
 using namespace std;
@@ -15,6 +16,7 @@ using namespace std;
 #endif
 
 // DEFINE PIN NUMBERS
+const int slave_select_pin = 26, mosi_pin = 25, miso_pin = 33, sck_pin = 32;
 const int prev_burst_button_pin=2, next_burst_button_pin=15;
 const int prev_page_button_pin=19, next_page_button_pin=18;
 const int last_burst_pin=4, last_page_pin=16;
@@ -226,3 +228,23 @@ bool is_lower(char c);
  * @return string Passed string with no newline or line feed characters.
  */
 string trim(string s);
+
+/* ========= SPI FUNCTIONS ========= */
+/**
+ * @brief Initializes the SPI module.
+ */
+void spi_init();
+
+/**
+ * @brief Transmits one byte of data via SPI.
+ * 
+ * @param data Any byte of data.
+ */
+void write_byte(uint8_t data);
+
+/**
+ * @brief Transmits each character in the burst via SPI.
+ * 
+ * @param current_burst Any string BURST_LEN long.
+ */
+void write_burst(string burst_ascii);

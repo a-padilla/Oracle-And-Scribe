@@ -280,3 +280,29 @@ string trim(string s){
   }
   return holder;
 }
+
+/* =========== SPI CODE =========== */
+void spi_init() {
+  pinMode(slave_select_pin, OUTPUT);
+  digitalWrite(slave_select_pin, HIGH);
+  pinMode(miso_pin, INPUT);
+  pinMode(mosi_pin, OUTPUT);
+  pinMode(sck_pin, OUTPUT);
+};
+
+void write_burst(string burst) {
+  string burst_ascii = burst_to_braille(burst);
+
+  digitalWrite(sck_pin, LOW);
+  digitalWrite(slave_select_pin, LOW);
+  for(unsigned i=0; i<burst_ascii.length(); i++){
+    while(digitalRead(miso_pin) == LOW);
+    if(burst_ascii[i] == '0') digitalWrite(mosi_pin, LOW);
+    else digitalWrite(mosi_pin, HIGH);
+    digitalWrite(sck_pin, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(sck_pin, LOW);
+    delayMicroseconds(100);
+  }
+  digitalWrite(slave_select_pin, HIGH);
+}
