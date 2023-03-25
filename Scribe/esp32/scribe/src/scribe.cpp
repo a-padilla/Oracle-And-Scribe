@@ -176,20 +176,6 @@ uint8_t decode(char c){
   }
 }
 
-void set_led(uint8_t c, vector<string>& book, string& curr_page, int& page_ind, int& burst_ind, int& char_ind){
-  // conditions for beginning and end of page
-  digitalWrite(last_page_pin, (page_ind==book.size()-1) ? HIGH : LOW);
-  digitalWrite(last_burst_pin, last_burst(curr_page, burst_ind) ? HIGH : LOW);
-
-  // conditions for characters
-  digitalWrite(led5, (c & 0b1) == 1 ? HIGH : LOW);
-  digitalWrite(led4, ((c>>1) & 0b1) == 1 ? HIGH : LOW);
-  digitalWrite(led3, ((c>>2) & 0b1) == 1 ? HIGH : LOW);
-  digitalWrite(led2, ((c>>3) & 0b1) == 1 ? HIGH : LOW);
-  digitalWrite(led1, ((c>>4) & 0b1) == 1 ? HIGH : LOW);
-  digitalWrite(led0, ((c>>5) & 0b1) == 1 ? HIGH : LOW);
-}
-
 string burst_from_page(string current_page, int burst_index){
   if(burst_index<current_page.length()/BURST_LEN){
     return current_page.substr(burst_index*BURST_LEN, BURST_LEN);  

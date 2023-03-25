@@ -18,9 +18,6 @@ using namespace std;
 const int slave_select_pin = 26, mosi_pin = 25, miso_pin = 33, sck_pin = 32;
 const int prev_burst_button_pin=2, next_burst_button_pin=15;
 const int prev_page_button_pin=19, next_page_button_pin=18;
-const int last_burst_pin=4, last_page_pin=16;
-const int led0=12, led1=14, led2=27, led3=26, led4=33, led5=32;
-
 
 /* =========== BT FUNCTIONS =========== */
 
@@ -133,18 +130,6 @@ void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& b
  * @return uint8_t Braille ASCII version of passed character.
  */
 uint8_t decode(char c);
-
-/**
- * @brief Set the LEDs with the current character.
- * 
- * @param c Current character.
- * @param book Entire book.
- * @param curr_burst Current burst.
- * @param page_ind Page index.
- * @param burst_ind Burst index.
- * @param char_ind Character index.
- */
-void set_led(uint8_t c, vector<string>& book, string& curr_page, int& page_ind, int& burst_ind, int& char_ind);
 
 /**
  * @brief Return burst given the current page and burst index.
