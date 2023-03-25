@@ -1,21 +1,9 @@
 #pragma once
 #include <Arduino.h>
 #include "BluetoothSerial.h"
+#include <SPI.h>
 #include <string>
 #include <vector>
-#include <stdio.h>
-#include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/spi_master.h"
-#define CLK_PIN     33
-#define MOSI_PIN    32
-#define CS_PIN      25
-#define DECODE_MODE_REG     0x09
-#define INTENSITY_REG       0x0A
-#define SCAN_LIMIT_REG      0x0B
-#define SHUTDOWN_REG        0x0C
-#define DISPLAY_TEST_REG    0x0F
 using namespace std;
 
 #define MAX_PAGES 3 // most amount of pages allowed in a book
@@ -28,6 +16,7 @@ using namespace std;
 #endif
 
 // DEFINE PIN NUMBERS
+const int slave_select_pin = 26, mosi_pin = 25, miso_pin = 33, sck_pin = 32;
 const int prev_burst_button_pin=2, next_burst_button_pin=15;
 const int prev_page_button_pin=19, next_page_button_pin=18;
 const int last_burst_pin=4, last_page_pin=16;
@@ -244,18 +233,18 @@ string trim(string s);
 /**
  * @brief Initializes the SPI module.
  */
-void spi_init(spi_device_handle_t& spi2);
+void spi_init();
 
 /**
  * @brief Transmits one byte of data via SPI.
  * 
  * @param data Any byte of data.
  */
-void write_byte(uint8_t data, spi_device_handle_t& spi2);
+void write_byte(uint8_t data);
 
 /**
  * @brief Transmits each character in the burst via SPI.
  * 
  * @param current_burst Any string BURST_LEN long.
  */
-void write_burst(string burst_ascii, spi_device_handle_t& spi2);
+void write_burst(string burst_ascii);

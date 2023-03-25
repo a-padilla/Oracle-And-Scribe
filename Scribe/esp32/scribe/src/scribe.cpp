@@ -282,45 +282,27 @@ string trim(string s){
 }
 
 /* =========== SPI CODE =========== */
-void spi_init(spi_device_handle_t& spi2) {
-    esp_err_t ret;
-    spi_bus_config_t buscfg={
-        .mosi_io_num = MOSI_PIN,
-        .miso_io_num = -1,
-        .sclk_io_num = CLK_PIN,
-        .quadwp_io_num = -1,
-        .quadhd_io_num = -1,
-        .max_transfer_sz = 32,
-    };
-    ret = spi_bus_initialize(SPI2_HOST, &buscfg, SPI_DMA_CH_AUTO);
-    ESP_ERROR_CHECK(ret);
-    spi_device_interface_config_t devcfg={
-        .mode = 0,                  //SPI mode 0
-        .clock_speed_hz = 1000000,  // 1 MHz
-        .spics_io_num = CS_PIN,     
-        .flags = SPI_DEVICE_HALFDUPLEX,
-        .queue_size = 1,
-        .pre_cb = NULL,
-        .post_cb = NULL,
-    };
-    ESP_ERROR_CHECK(spi_bus_add_device(SPI2_HOST, &devcfg, &spi2));
+void spi_init() {
+  pinMode(slave_select_pin, OUTPUT);
+  digitalWrite(slave_select_pin, HIGH);
+  pinMode(miso_pin, INPUT);
+  pinMode(mosi_pin, OUTPUT);
+  pinMode(sck_pin, OUTPUT);
 };
 
-void write_byte(uint8_t data, spi_device_handle_t& spi2) {
-    uint8_t tx_data[1] = { data };
-    spi_transaction_t t = {
-        .length = 8,
-        .tx_buffer = tx_data,
-    };
-    ESP_ERROR_CHECK(spi_device_polling_transmit(spi2, &t));
-    vTaskDelay(1);
-}
+void write_burst(string burst) {
+  string burst_ascii = burst_to_braille(burst);
 
-void write_burst(string burst_ascii, spi_device_handle_t& spi2) {
-  for(int i = 0; i < burst_ascii.length() ; i++) {
-    write_byte(burst_ascii[i], spi2);
+  digitalWrite(sck_pin, LOW);
+  digitalWrite(slave_select_pin, LOW);
+  for(unsigned i=0; i<burst_ascii.length(); i++){
+    while(digitalRead(miso_pin) == LOW);
+    if(burst_ascii[i] == '0') digitalWrite(mosi_pin, LOW);
+    else digitalWrite(mosi_pin, HIGH);
+    digitalWrite(sck_pin, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(sck_pin, LOW);
+    delayMicroseconds(100);
   }
-  
-  //Wait 100ms to give arduino time to process and display the data
-  vTaskDelay(10);
+  digitalWrite(slave_select_pin, HIGH);
 }
