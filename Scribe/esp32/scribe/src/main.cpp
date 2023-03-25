@@ -24,22 +24,13 @@ void setup() {
   curr_burst = burst_from_page(curr_page, burst_ind);
   print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
   
-  //leds
-  // pinMode(led0, OUTPUT);
-  // pinMode(led1, OUTPUT);
-  // pinMode(led2, OUTPUT);
-  // pinMode(led3, OUTPUT);
-  // pinMode(led4, OUTPUT);
-  // pinMode(led5, OUTPUT);
-  // pinMode(last_burst_pin, OUTPUT);
-  // pinMode(last_page_pin, OUTPUT);
   // buttons
   pinMode(prev_burst_button_pin, INPUT);
   pinMode(next_burst_button_pin, INPUT);
   pinMode(prev_page_button_pin, INPUT);
   pinMode(next_page_button_pin, INPUT);
 
-  //WILL OVERRIDE SOME LED OUTPUTS
+  // spi to arduino
   spi_init();
 }
 

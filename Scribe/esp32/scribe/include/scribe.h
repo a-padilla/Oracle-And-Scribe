@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include "BluetoothSerial.h"
-#include <SPI.h>
 #include <string>
 #include <vector>
 using namespace std;
@@ -234,13 +233,6 @@ string trim(string s);
  * @brief Initializes the SPI module.
  */
 void spi_init();
-
-/**
- * @brief Transmits one byte of data via SPI.
- * 
- * @param data Any byte of data.
- */
-void write_byte(uint8_t data);
 
 /**
  * @brief Transmits each character in the burst via SPI.
