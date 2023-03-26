@@ -56,33 +56,30 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page);
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  */
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind);
 
 /**
- * @brief Update the char and burst index and get the next burst in a page.
+ * @brief Update the burst index and get the next burst in a page.
  * 
  * @param curr_page Current page.
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  * @return string Next burst.
  */
-string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind);
 
 /**
- * @brief Update the char and burst index and get the prev burst in a page.
+ * @brief Update the burst index and get the prev burst in a page.
  * 
  * @param curr_page Current page.
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  * @return string Previous burst.
  */
-string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind);
 
 /**
  * @brief Updates the page index and returns the next page. If on the last page, then calls get_page.
@@ -91,12 +88,11 @@ string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  * @param SerialBT Serial BlueTooth object.
  * @param page Holder for new page.
  * @return string Next page.
  */
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& page);
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, BluetoothSerial& SerialBT, vector<string>& page);
 
 /**
  * @brief Updates the page index and returns the previous page.
@@ -105,10 +101,9 @@ string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& b
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  * @return string Previous page.
  */
-string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind);
 
 /**
  * @brief Calls bt_loop. If a new page is loaded, put the new page in the book.
@@ -119,9 +114,8 @@ string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& b
  * @param curr_burst Current burst.
  * @param page_ind Page index.
  * @param burst_ind Burst index.
- * @param char_ind Character index.
  */
-void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind);
+void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind);
 
 /**
  * @brief Decodes the Braille ASCII of a character.
