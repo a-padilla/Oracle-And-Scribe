@@ -63,38 +63,34 @@ bool bt_loop(BluetoothSerial& SerialBT, vector<string>& page){
 
 /* ========== CORE FUNCTIONS ========== */
 
-void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+void poll(const int button_pin, long &lbt, int &button, char bp, char np, BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_page, string& curr_burst, int& page_ind, int& burst_ind){
     button=digitalRead(button_pin);
     if(((long)millis()-lbt)>DEBOUNCE_DELAY){
       // if button pressed
       if(button==HIGH){
         if(bp=='b'){
           if(np=='n'){
-            curr_burst=next_burst(curr_page, curr_burst, page_ind, burst_ind, char_ind);
-            print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
+            curr_burst=next_burst(curr_page, curr_burst, page_ind, burst_ind);
           }else{
-            curr_burst=prev_burst(curr_page, curr_burst, page_ind, burst_ind, char_ind);
-            print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
+            curr_burst=prev_burst(curr_page, curr_burst, page_ind, burst_ind);
           }
         }else if(bp=='p'){
           if(np=='n'){
-            curr_page=next_page(book, curr_burst, page_ind, burst_ind, char_ind, SerialBT, page);
+            curr_page=next_page(book, curr_burst, page_ind, burst_ind, SerialBT, page);
             curr_burst = burst_from_page(curr_page, burst_ind);
-            print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
           }else{
-            curr_page=prev_page(book, curr_burst, page_ind, burst_ind, char_ind);
+            curr_page=prev_page(book, curr_burst, page_ind, burst_ind);
             curr_burst = burst_from_page(curr_page, burst_ind);
-            print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
           }
         }
+        print_info(page_ind, burst_ind, (int)book.size(), curr_page, curr_burst);
         lbt=millis();
       }
     }
 }
 
-string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind){
   if(!last_burst(curr_page, burst_ind)){
-    char_ind += BURST_LEN;
     burst_ind++;
     return burst_from_page(curr_page, burst_ind);
   }else{
@@ -102,49 +98,43 @@ string next_burst(string& curr_page, string& curr_burst, int& page_ind, int& bur
   }
 }
 
-string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+string prev_burst(string& curr_page, string& curr_burst, int& page_ind, int& burst_ind){
   if(burst_ind==0){
-    char_ind=0;
     return curr_burst;
   }else{
     burst_ind--;
-    char_ind-=BURST_LEN;
     return burst_from_page(curr_page, burst_ind);
   }
 }
 
-string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind, BluetoothSerial& SerialBT, vector<string>& page){
+string next_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, BluetoothSerial& SerialBT, vector<string>& page){
   if(page_ind==book.size()-1){
-    get_page(SerialBT, page, book, curr_burst, page_ind, burst_ind, char_ind);
+    get_page(SerialBT, page, book, curr_burst, page_ind, burst_ind);
     return book[page_ind];
   }else{
     page_ind++;
-    char_ind=0;
     burst_ind=0;
     return book[page_ind];
   }
 }
 
-string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+string prev_page(vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind){
   if(page_ind==0){
     page_ind=0;
-    char_ind=0;
     burst_ind=0;
     return book[page_ind];
   }else{
     page_ind--;
-    char_ind=0;
     burst_ind=0;
     return book[page_ind];
   }
 }
 
-void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind, int& char_ind){
+void get_page(BluetoothSerial& SerialBT, vector<string>& page, vector<string>& book, string& curr_burst, int& page_ind, int& burst_ind){
   if(bt_loop(SerialBT, page)){ // new page?
     if(book.size()==MAX_PAGES)
       book.erase(book.begin());
     book.push_back(change_page_format(page));
-    char_ind=0;
     burst_ind=0;
     page_ind=book.size()-1;
   }
