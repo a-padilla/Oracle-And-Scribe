@@ -2,7 +2,7 @@
 import time
 from bluetooth import *
 
-class PCClient():
+class Alice():
 	"""Encapsulates all functionality to take an image, process it, and send it to the Scribe
 
 	Inherits from the Arducam team's Camera class
@@ -87,7 +87,7 @@ class PCClient():
 		"""Get the text from the file"""
 		#open sample.txt, read 15 lines, store, and remove from file
 		#return the text
-		with open("PCClient/sample.txt", "r+") as f:
+		with open("Alice/sample.txt", "r+") as f:
 			lines = f.readlines()
 			f.seek(0)
 			f.truncate()
