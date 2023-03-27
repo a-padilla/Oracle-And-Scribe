@@ -26,12 +26,7 @@ void read_burst() {
   while(digitalRead(ss_pin)==LOW && i < BURST_LEN*6){
     if(digitalRead(sck_pin) == HIGH){
       digitalWrite(miso_pin, LOW);
-      bool ch = (bool)digitalRead(mosi_pin);
-      if(ch){
-        burst[i] = '1';
-      }else{
-        burst[i]='0';
-      }
+      (bool)digitalRead(mosi_pin) ? burst[i]='1' : burst[i]='0';
       i++;
       digitalWrite(miso_pin, HIGH);
       while(digitalRead(sck_pin) == HIGH);

@@ -273,8 +273,7 @@ void write_burst(string burst) {
   digitalWrite(slave_select_pin, LOW);
   for(unsigned i=0; i<burst_ascii.length(); i++){
     while(digitalRead(miso_pin) == LOW);
-    if(burst_ascii[i] == '0') digitalWrite(mosi_pin, LOW);
-    else digitalWrite(mosi_pin, HIGH);
+    digitalWrite(mosi_pin, (burst_ascii[i]=='1') ? HIGH : LOW);
     digitalWrite(sck_pin, HIGH);
     delayMicroseconds(100);
     digitalWrite(sck_pin, LOW);
