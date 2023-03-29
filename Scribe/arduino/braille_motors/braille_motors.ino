@@ -38,11 +38,8 @@ void read_burst() {
 
 void set_burst(){
   for(int i=0; i<BURST_LEN*6; i++){
-    // Read the input state of the specified digital pin
-    bool inputState = burst[i]=='1';
-
-    // Set the servo position based on the input state
-    if (inputState) {
+    // Set the servo position based on the string
+    if (burst[i]=='1') {
       if(i%6>2){
         if(i/16<1)
           pwm1.setPWM(i, 0, servoMax);
