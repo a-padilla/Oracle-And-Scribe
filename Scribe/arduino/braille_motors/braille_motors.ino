@@ -7,7 +7,7 @@
 Adafruit_PWMServoDriver pwm1 = Adafruit_PWMServoDriver(0x40); // create an object of board 1
 Adafruit_PWMServoDriver pwm2 = Adafruit_PWMServoDriver(0x41); // create an object of board 2
 
-int servoMin = 204, servoMax = 250, servoFrequency = 50;
+int servoMin = 204, servoMax = 270, servoFrequency = 50;
 const int ss_pin=13, mosi_pin=12, miso_pin = 11, sck_pin=10;
 
 char burst[BURST_LEN*6+1];
