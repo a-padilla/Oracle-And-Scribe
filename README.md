@@ -27,7 +27,7 @@ Link to [Production Release Document](https://docs.google.com/document/d/1Hyzxng
   4. Wire up the Arduino Uno, ESP32, PCA9865s, servos, and buttons as shown in the Production Release Document.
   5. Power the device.
 
-* Scribe
+* Alice
   1. On a computer with python, the pybluez module, and a bluetooth adapter, connect the computer to the Scribe via bluetooth.
   2. Run NVDA with the [Speech Logger Addon](https://addons.nvda-project.org/addons/speechLogger.en.html), and set the output to a text file in the Alice folder named "sample.txt"
   3. Run the send_to_scribe.py script in the Alice folder
